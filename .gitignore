@@ -1,0 +1,26 @@
+# --- Archivos de entorno virtual ---
+venv/
+env/
+__pycache__/
+
+# --- Configuración local ---
+.env
+
+# --- Archivos temporales de Python ---
+*.pyc
+*.pyo
+*.pyd
+
+# --- Archivos de logs ---
+*.log
+
+# --- Archivos de base de datos local ---
+*.sqlite3
+
+# --- Archivos de editor (VS Code, PyCharm, etc.) ---
+.vscode/
+.idea/
+
+# --- Archivos del sistema ---
+.DS_Store
+Thumbs.db
