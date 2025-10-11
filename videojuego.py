@@ -13,10 +13,31 @@ def get_db_connection():
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     return conn
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# =====================
+# Rutas de la app
+# =====================
 
+@app.route('/')
+def lobby():
+    return render_template('lobby.html')
+
+@app.route('/personajes')
+def personajes():
+    return render_template('personajes.html')
+
+@app.route('/inventario')
+def inventario():
+    return render_template('inventario.html')
+
+@app.route('/gremio')
+def gremio():
+    return render_template('gremio.html')
+
+@app.route('/logros')
+def logros():
+    return render_template('logros.html')
+
+# Ruta original que devuelve los jugadores en JSON
 @app.route('/jugadores')
 def jugadores():
     conn = get_db_connection()
@@ -27,5 +48,6 @@ def jugadores():
     conn.close()
     return jsonify(jugadores)
 
+# =====================
 if __name__ == '__main__':
     app.run(debug=True)
