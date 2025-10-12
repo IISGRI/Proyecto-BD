@@ -26,20 +26,60 @@ def index():
 
 @app.route('/lobby')
 def lobby():
-    # Datos de ejemplo — más adelante puedes traerlos desde Supabase
-    jugador = {
-        'nombre': 'Liam',
-        'nivel': 12,
-        'id': 42,
-        'xp_porcentaje': 60
-    }
+    conn = get_db_connection()
+    cur = conn.cursor()
 
-    personaje = {
-        'nombre': 'Aragorn',
-        'nivel': 12,
-        'clase': 'Guerrero',
-        'imagen': url_for('static', filename='img/personaje01.png')
-    }
+    # ⚙️ Aquí seleccionamos al primer jugador como ejemplo
+    cur.execute("""
+        SELECT id_jugador, nombre_usuario, experiencia, nivel
+        FROM jugador
+        LIMIT 1;
+    """)
+    jugador_data = cur.fetchone()
+
+    if jugador_data:
+        jugador = {
+            'id': jugador_data[0],
+            'nombre': jugador_data[1],
+            'experiencia': jugador_data[2],
+            'nivel': jugador_data[3],
+            'xp_porcentaje': jugador_data[2] % 100  # solo para ejemplo visual
+        }
+    else:
+        jugador = {
+            'id': 0,
+            'nombre': 'Desconocido',
+            'experiencia': 0,
+            'nivel': 1,
+            'xp_porcentaje': 0
+        }
+
+    # Ejemplo: obtener personaje asociado al jugador
+    cur.execute("""
+        SELECT nombre, nivel, clase
+        FROM personaje
+        WHERE id_jugador = %s
+        LIMIT 1;
+    """, (jugador['id'],))
+    personaje_data = cur.fetchone()
+
+    if personaje_data:
+        personaje = {
+            'nombre': personaje_data[0],
+            'nivel': personaje_data[1],
+            'clase': personaje_data[2],
+            'imagen': url_for('static', filename='img/personaje01.png')
+        }
+    else:
+        personaje = {
+            'nombre': 'Sin personaje',
+            'nivel': 0,
+            'clase': 'N/A',
+            'imagen': url_for('static', filename='img/personaje01.png')
+        }
+
+    cur.close()
+    conn.close()
 
     return render_template('lobby.html', jugador=jugador, personaje=personaje)
 
