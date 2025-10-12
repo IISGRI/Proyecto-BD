@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, url_for
 import psycopg2
 import os
 from dotenv import load_dotenv
@@ -8,18 +8,40 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# ==========================================
 # Conexión a la base de datos Supabase/PostgreSQL
+# ==========================================
 def get_db_connection():
     conn = psycopg2.connect(os.getenv("DATABASE_URL"))
     return conn
 
-# =====================
-# Rutas de la app
-# =====================
+# ==========================================
+# Rutas de la aplicación
+# ==========================================
 
 @app.route('/')
+def index():
+    # Redirige directamente al lobby
+    return lobby()
+
+@app.route('/lobby')
 def lobby():
-    return render_template('lobby.html')
+    # Datos de ejemplo — más adelante puedes traerlos desde Supabase
+    jugador = {
+        'nombre': 'Liam',
+        'nivel': 12,
+        'id': 42,
+        'xp_porcentaje': 60
+    }
+
+    personaje = {
+        'nombre': 'Aragorn',
+        'nivel': 12,
+        'clase': 'Guerrero',
+        'imagen': url_for('static', filename='img/personaje01.png')
+    }
+
+    return render_template('lobby.html', jugador=jugador, personaje=personaje)
 
 @app.route('/personajes')
 def personajes():
@@ -37,17 +59,5 @@ def gremio():
 def logros():
     return render_template('logros.html')
 
-# Ruta original que devuelve los jugadores en JSON
-@app.route('/jugadores')
-def jugadores():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT id_jugador, nombre_usuario, nivel FROM jugador ORDER BY id_jugador;')
-    jugadores = cur.fetchall()
-    cur.close()
-    conn.close()
-    return jsonify(jugadores)
-
-# =====================
 if __name__ == '__main__':
     app.run(debug=True)
