@@ -2,31 +2,204 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Personajes</title>
+  <title>Página de Personajes</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
-    body { background:#f0f4f8; color:#333; display:flex; flex-direction:column; align-items:center; padding:40px 20px;}
-    h1 { margin-bottom:20px; color:#1f2937; text-shadow:1px 1px 2px rgba(0,0,0,0.1);}
-    nav a { margin: 0 10px; text-decoration:none; color:#007bff;}
-    nav a:hover { text-decoration:underline;}
-    ul { list-style:none; width:100%; max-width:400px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-    li { padding:10px 0; border-bottom:1px solid #e5e7eb;}
-    li:last-child { border-bottom:none;}
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-image: url("{{ url_for('static', filename='img/fondolobby.jpg') }}");
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+      padding: 40px;
+      backdrop-filter: blur(4px);
+    }
+
+    .left { flex: 1; }
+
+    .section { margin-bottom: 40px; }
+
+    .section h3 {
+      margin-bottom: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    .cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      width: 130px;
+      height: 160px;
+      border: 2px solid #fff;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      border-color: gold;
+    }
+
+    .card img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 5px;
+    }
+
+    .right {
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      position: sticky;
+      top: 40px;
+    }
+
+    .box {
+      border: 2px solid #fff;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      width: 100%;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    .box img {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 10px;
+    }
+
+    .button-container {
+      text-align: center;
+      width: 100%;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 2px solid #fff;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: gold;
+      color: #000;
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="/">Lobby</a> |
-    <a href="/personajes">Personajes</a> |
-    <a href="/inventario">Inventario</a> |
-    <a href="/gremio">Gremio</a> |
-    <a href="/logros">Logros</a>
-  </nav>
-  <h1>Personajes</h1>
-  <ul>
-    <li>Personaje 1 - Guerrero</li>
-    <li>Personaje 2 - Mago</li>
-    <li>Personaje 3 - Arquero</li>
-  </ul>
+  <div class="container">
+    <!-- IZQUIERDA -->
+    <div class="left">
+      <div class="section">
+        <h3>Personajes:</h3>
+        <div class="cards">
+          <div class="card add">+</div>
+
+          <!-- Personaje ejemplo -->
+          <div class="card personaje" 
+               data-nombre="Personaje 1"
+               data-nivel="10"
+               data-descripcion="Guerrero legendario del reino oscuro."
+               data-imagen="{{ url_for('static', filename='img/personaje01.png') }}">
+            <img src="{{ url_for('static', filename='img/personaje01.png') }}" alt="Personaje 1">
+            <p>Personaje 1</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Mascotas:</h3>
+        <div class="cards">
+          <div class="card add">+</div>
+
+          <!-- Mascota ejemplo -->
+          <div class="card personaje"
+               data-nombre="Mascota 1"
+               data-nivel="3"
+               data-descripcion="Fiel compañero con poderes mágicos."
+               data-imagen="{{ url_for('static', filename='img/mascota01.png') }}">
+            <img src="{{ url_for('static', filename='img/mascota01.png') }}" alt="Mascota 1">
+            <p>Mascota 1</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DERECHA -->
+    <div class="right">
+      <div class="box" id="mostrar-box">
+        <p>Selecciona un personaje o mascota</p>
+      </div>
+
+      <div class="box" id="info-box">
+        <p>Información del personaje/mascota</p>
+      </div>
+
+      <div class="button-container">
+        <button onclick="window.location.href='{{ url_for('lobby') }}'">Regresar a la lobby</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    // Selecciona todas las tarjetas de personajes o mascotas
+    const personajes = document.querySelectorAll('.card.personaje');
+
+    // Elementos del panel derecho
+    const mostrarBox = document.getElementById('mostrar-box');
+    const infoBox = document.getElementById('info-box');
+
+    personajes.forEach(card => {
+      card.addEventListener('click', () => {
+        const nombre = card.dataset.nombre;
+        const nivel = card.dataset.nivel;
+        const descripcion = card.dataset.descripcion;
+        const imagen = card.dataset.imagen;
+
+        // Mostrar imagen y nombre en la parte superior
+        mostrarBox.innerHTML = `
+          <img src="${imagen}" alt="${nombre}">
+          <h3>${nombre}</h3>
+        `;
+
+        // Mostrar información
+        infoBox.innerHTML = `
+          <p><strong>Nombre:</strong> ${nombre}</p>
+          <p><strong>Nivel:</strong> ${nivel}</p>
+          <p><strong>Descripción:</strong> ${descripcion}</p>
+        `;
+      });
+    });
+  </script>
 </body>
 </html>
