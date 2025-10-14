@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Personajes</title>
+  <title>Mascotas</title>
   <style>
     body {
       background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
@@ -54,7 +54,7 @@
       display: flex;
       width: 100%;
       flex: 1;
-      margin-top: 70px; /* deja espacio para la barra superior */
+      margin-top: 70px;
     }
 
     /* Panel izquierdo */
@@ -70,7 +70,7 @@
     }
 
     /* Tarjetas */
-    .personaje-card {
+    .mascota-card {
       background: rgba(50, 50, 50, 0.9);
       border-radius: 12px;
       padding: 20px;
@@ -81,7 +81,7 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
-    .personaje-card:hover {
+    .mascota-card:hover {
       transform: scale(1.04);
       background: rgba(70, 70, 70, 0.95);
       box-shadow: 0 6px 15px rgba(0,0,0,0.4);
@@ -101,8 +101,8 @@
     }
 
     .detalle img {
-      width: 220px;
-      height: 220px;
+      width: 200px;
+      height: 200px;
       object-fit: contain;
       margin-bottom: 15px;
       border-radius: 10px;
@@ -155,14 +155,13 @@
 
     h2, h3 { margin-bottom: 10px; }
     p { margin: 4px 0; }
-
   </style>
 </head>
 <body>
   <!-- Barra superior -->
   <div class="barra-superior">
     <a href="{{ url_for('lobby') }}" class="btn-regresar">⟵ Regresar al lobby</a>
-    <h1>Gestión de Personajes</h1>
+    <h1>Gestión de Mascotas</h1>
     <div></div>
   </div>
 
@@ -170,30 +169,30 @@
   <div class="contenedor">
     <!-- Panel izquierdo -->
     <div class="lista">
-      <h2>Mis Personajes</h2>
-      {% for p in personajes %}
-      <div class="personaje-card" onclick="mostrarDetalle({{ p[0] }})">
-        <h3>{{ p[1] }}</h3>
-        <p><b>Clase:</b> {{ p[2] }}</p>
-        <p><b>Nivel:</b> {{ p[3] }}</p>
+      <h2>Mis Mascotas</h2>
+      {% for m in mascotas %}
+      <div class="mascota-card" onclick="mostrarDetalle({{ m[0] }})">
+        <h3>{{ m[1] }}</h3>
+        <p><b>Tipo:</b> {{ m[2] }}</p>
+        <p><b>Nivel:</b> {{ m[3] }}</p>
       </div>
       {% endfor %}
-      <button class="btn-agregar" onclick="openModal()">+ Agregar Personaje</button>
+      <button class="btn-agregar" onclick="openModal()">+ Agregar Mascota</button>
     </div>
 
     <!-- Panel derecho -->
     <div class="detalle" id="detalle">
-      <h2>Selecciona un personaje</h2>
+      <h2>Selecciona una mascota</h2>
     </div>
   </div>
 
   <!-- Modal -->
   <div id="modalAgregar" class="modal">
     <div class="modal-content">
-      <h2>Nuevo Personaje</h2>
+      <h2>Nueva Mascota</h2>
       <form method="POST">
         <input type="text" name="nombre" placeholder="Nombre" required><br>
-        <input type="text" name="clase" placeholder="Clase" required><br>
+        <input type="text" name="tipo" placeholder="Tipo" required><br>
         <input type="number" name="nivel" placeholder="Nivel" value="1" min="1"><br>
         <button type="submit" class="btn-agregar">Guardar</button>
         <button type="button" onclick="closeModal()">Cancelar</button>
@@ -203,19 +202,19 @@
 
   <script>
     async function mostrarDetalle(id) {
-      const res = await fetch(`/api/personaje/${id}`);
+      const res = await fetch(`/api/mascota/${id}`);
       const data = await res.json();
       const cont = document.getElementById("detalle");
 
       if (data.error) {
-        cont.innerHTML = `<h2>Error al cargar personaje</h2>`;
+        cont.innerHTML = `<h2>Error al cargar mascota</h2>`;
         return;
       }
 
       cont.innerHTML = `
-        <img src="/static/img/personaje01.png" alt="Personaje">
+        <img src="/static/img/mascota01.png" alt="Mascota">
         <h2>${data.nombre}</h2>
-        <p><b>Clase:</b> ${data.clase}</p>
+        <p><b>Tipo:</b> ${data.tipo}</p>
         <p><b>Nivel:</b> ${data.nivel}</p>
       `;
     }
