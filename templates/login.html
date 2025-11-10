@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Sesión</title>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1b2735, #090a0f);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      margin: 0;
+    }
+
+    .container {
+      background: rgba(30, 30, 30, 0.9);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 340px;
+      animation: fadeIn 1s ease;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #4CAF50;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 95%;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover { background-color: #45a049; }
+
+    .link {
+      color: #a0a0a0;
+      text-decoration: none;
+      font-size: 14px;
+      display: block;
+      margin-top: 15px;
+    }
+
+    .link:hover { color: #4CAF50; }
+
+    .flash {
+      background-color: rgba(255,255,255,0.1);
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: #ffc107;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Iniciar Sesión</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <input type="email" name="correo" placeholder="Correo electrónico" required><br>
+      <input type="password" name="contrasena" placeholder="Contraseña" required><br>
+      <button type="submit" class="btn">Entrar</button>
+    </form>
+
+    <a href="{{ url_for('registro') }}" class="link">¿No tienes cuenta? Regístrate</a>
+  </div>
+</body>
+</html>

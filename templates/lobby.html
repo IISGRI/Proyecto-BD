@@ -6,18 +6,39 @@
   <title>Lobby - Juego</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
 </head>
+
 <body style="background: url('{{ url_for('static', filename='img/fondolobby.jpg') }}') center/cover no-repeat;">
 
+  <!-- ========================= HEADER ========================= -->
   <header>
     <div class="player-info">
       <strong>{{ jugador.nombre }}</strong> (Nivel {{ jugador.nivel }})<br>
       ID: {{ jugador.id }}
     </div>
+
     <div class="xp-bar">
       <div class="xp-fill" style="width: {{ jugador.xp_porcentaje }}%;"></div>
     </div>
+
+    <div class="logout-btn">
+      <form action="{{ url_for('logout') }}" method="get">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </div>
   </header>
 
+  <!-- ========================= MENSAJES FLASH ========================= -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ========================= CUERPO PRINCIPAL ========================= -->
   <main class="character">
     <img src="{{ personaje.imagen }}" alt="Imagen del personaje">
     <div class="char-info">
@@ -27,13 +48,129 @@
     </div>
   </main>
 
+  <!-- ========================= PIE DE PÁGINA ========================= -->
   <footer>
     <div class="nav-card" onclick="window.location.href='{{ url_for('personajes') }}'">Personajes</div>
+    <div class="nav-card" onclick="window.location.href='{{ url_for('mascotas') }}'">Mascotas</div>
     <div class="nav-card" onclick="window.location.href='{{ url_for('inventario') }}'">Inventario</div>
     <div class="nav-card" onclick="window.location.href='{{ url_for('gremio') }}'">Gremio</div>
     <div class="nav-card" onclick="window.location.href='{{ url_for('logros') }}'">Logros</div>
     <div class="nav-card">Partida</div>
   </footer>
+
+  <!-- ========================= ESTILOS INTERNOS OPCIONALES ========================= -->
+  <style>
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      position: relative;
+    }
+
+    .player-info {
+      font-size: 1.2em;
+    }
+
+    .xp-bar {
+      flex-grow: 1;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.3);
+      margin: 0 15px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      height: 100%;
+      background-color: limegreen;
+      transition: width 0.5s ease;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+    }
+
+    .logout-btn button {
+      background-color: #c0392b;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .logout-btn button:hover {
+      background-color: #e74c3c;
+    }
+
+    .flash-container {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .flash {
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .flash.success { background-color: #28a745; }
+    .flash.error { background-color: #dc3545; }
+    .flash.warning { background-color: #ffc107; color: #222; }
+    .flash.info { background-color: #17a2b8; }
+
+    main.character {
+      text-align: center;
+      margin-top: 100px;
+    }
+
+    .char-info {
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      display: inline-block;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-around;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 15px 0;
+      color: white;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .nav-card {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px 25px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin: 5px;
+    }
+
+    .nav-card:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  </style>
 
 </body>
 </html>

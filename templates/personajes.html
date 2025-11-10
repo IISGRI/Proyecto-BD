@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Personajes</title>
+  <title>Gestión de Personajes</title>
   <style>
     body {
       background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
@@ -14,7 +14,6 @@
       height: 100vh;
     }
 
-    /* === Barra superior === */
     .barra-superior {
       position: fixed;
       top: 0;
@@ -30,11 +29,6 @@
       z-index: 100;
     }
 
-    .barra-superior h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
     .btn-regresar {
       background-color: #4CAF50;
       color: white;
@@ -45,19 +39,15 @@
       transition: background 0.3s ease;
     }
 
-    .btn-regresar:hover {
-      background-color: #45a049;
-    }
+    .btn-regresar:hover { background-color: #45a049; }
 
-    /* === Contenedor principal === */
     .contenedor {
       display: flex;
       width: 100%;
       flex: 1;
-      margin-top: 70px; /* deja espacio para la barra superior */
+      margin-top: 70px;
     }
 
-    /* Panel izquierdo */
     .lista {
       width: 45%;
       overflow-y: auto;
@@ -69,25 +59,40 @@
       background-color: rgba(20, 20, 20, 0.85);
     }
 
-    /* Tarjetas */
     .personaje-card {
       background: rgba(50, 50, 50, 0.9);
       border-radius: 12px;
       padding: 20px;
       width: 80%;
-      cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
     }
 
     .personaje-card:hover {
-      transform: scale(1.04);
-      background: rgba(70, 70, 70, 0.95);
+      transform: scale(1.03);
       box-shadow: 0 6px 15px rgba(0,0,0,0.4);
     }
 
-    /* Panel derecho */
+    .card-btn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+
+    .btn-editar { background-color: #2196F3; color: white; }
+    .btn-eliminar { background-color: #e53935; color: white; }
+    .btn-seleccionar { background-color: #8bc34a; color: white; }
+
+    .btn-editar:hover { background-color: #1e88e5; }
+    .btn-eliminar:hover { background-color: #d32f2f; }
+    .btn-seleccionar:hover { background-color: #7cb342; }
+
     .detalle {
       width: 55%;
       display: flex;
@@ -109,7 +114,6 @@
       box-shadow: 0 0 15px rgba(255,255,255,0.15);
     }
 
-    /* Botón Agregar */
     .btn-agregar {
       background: #4CAF50;
       color: white;
@@ -126,7 +130,6 @@
       transform: scale(1.05);
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -143,6 +146,7 @@
       width: 400px;
       border-radius: 15px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
     }
 
     input {
@@ -153,22 +157,16 @@
       border-radius: 5px;
     }
 
-    h2, h3 { margin-bottom: 10px; }
-    p { margin: 4px 0; }
-
   </style>
 </head>
 <body>
-  <!-- Barra superior -->
   <div class="barra-superior">
     <a href="{{ url_for('lobby') }}" class="btn-regresar">⟵ Regresar al lobby</a>
     <h1>Gestión de Personajes</h1>
     <div></div>
   </div>
 
-  <!-- Contenido principal -->
   <div class="contenedor">
-    <!-- Panel izquierdo -->
     <div class="lista">
       <h2>Mis Personajes</h2>
       {% for p in personajes %}
@@ -176,25 +174,26 @@
         <h3>{{ p[1] }}</h3>
         <p><b>Clase:</b> {{ p[2] }}</p>
         <p><b>Nivel:</b> {{ p[3] }}</p>
+        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarPersonaje({{ p[0] }}, '{{ p[1] }}', '{{ p[2] }}')">✏️ Editar</button>
+        <button class="card-btn btn-eliminar" onclick="event.stopPropagation(); eliminarPersonaje({{ p[0] }})">🗑️ Eliminar</button>
+        <button class="card-btn btn-seleccionar" onclick="event.stopPropagation(); seleccionarPersonaje({{ p[0] }})">⭐ Seleccionar</button>
       </div>
       {% endfor %}
       <button class="btn-agregar" onclick="openModal()">+ Agregar Personaje</button>
     </div>
 
-    <!-- Panel derecho -->
     <div class="detalle" id="detalle">
       <h2>Selecciona un personaje</h2>
     </div>
   </div>
 
-  <!-- Modal -->
   <div id="modalAgregar" class="modal">
     <div class="modal-content">
-      <h2>Nuevo Personaje</h2>
-      <form method="POST">
-        <input type="text" name="nombre" placeholder="Nombre" required><br>
-        <input type="text" name="clase" placeholder="Clase" required><br>
-        <input type="number" name="nivel" placeholder="Nivel" value="1" min="1"><br>
+      <h2 id="tituloModal">Nuevo Personaje</h2>
+      <form method="POST" id="formPersonaje">
+        <input type="hidden" name="id_personaje" id="id_personaje">
+        <input type="text" name="nombre" id="nombre" placeholder="Nombre" required><br>
+        <input type="text" name="clase" id="clase" placeholder="Clase" required><br>
         <button type="submit" class="btn-agregar">Guardar</button>
         <button type="button" onclick="closeModal()">Cancelar</button>
       </form>
@@ -221,11 +220,36 @@
     }
 
     function openModal() {
+      document.getElementById("formPersonaje").reset();
+      document.getElementById("id_personaje").value = "";
+      document.getElementById("tituloModal").innerText = "Nuevo Personaje";
       document.getElementById("modalAgregar").style.display = "block";
     }
 
     function closeModal() {
       document.getElementById("modalAgregar").style.display = "none";
+    }
+
+    function editarPersonaje(id, nombre, clase) {
+      document.getElementById("id_personaje").value = id;
+      document.getElementById("nombre").value = nombre;
+      document.getElementById("clase").value = clase;
+      document.getElementById("tituloModal").innerText = "Editar Personaje";
+      document.getElementById("modalAgregar").style.display = "block";
+    }
+
+    async function eliminarPersonaje(id) {
+      if (confirm("¿Seguro que deseas eliminar este personaje?")) {
+        const res = await fetch(`/eliminar_personaje/${id}`, { method: "DELETE" });
+        if (res.ok) location.reload();
+        else alert("Error al eliminar personaje.");
+      }
+    }
+
+    async function seleccionarPersonaje(id) {
+      const res = await fetch(`/seleccionar_personaje/${id}`, { method: "POST" });
+      if (res.ok) alert("✅ Personaje seleccionado correctamente.");
+      else alert("Error al seleccionar personaje.");
     }
   </script>
 </body>

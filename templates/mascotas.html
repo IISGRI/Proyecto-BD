@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mascotas</title>
+  <title>Gestión de Mascotas</title>
   <style>
     body {
       background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
@@ -14,7 +14,6 @@
       height: 100vh;
     }
 
-    /* === Barra superior === */
     .barra-superior {
       position: fixed;
       top: 0;
@@ -30,11 +29,6 @@
       z-index: 100;
     }
 
-    .barra-superior h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
     .btn-regresar {
       background-color: #4CAF50;
       color: white;
@@ -45,11 +39,8 @@
       transition: background 0.3s ease;
     }
 
-    .btn-regresar:hover {
-      background-color: #45a049;
-    }
+    .btn-regresar:hover { background-color: #45a049; }
 
-    /* === Contenedor principal === */
     .contenedor {
       display: flex;
       width: 100%;
@@ -57,7 +48,6 @@
       margin-top: 70px;
     }
 
-    /* Panel izquierdo */
     .lista {
       width: 45%;
       overflow-y: auto;
@@ -69,25 +59,40 @@
       background-color: rgba(20, 20, 20, 0.85);
     }
 
-    /* Tarjetas */
     .mascota-card {
       background: rgba(50, 50, 50, 0.9);
       border-radius: 12px;
       padding: 20px;
       width: 80%;
-      cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
     }
 
     .mascota-card:hover {
-      transform: scale(1.04);
-      background: rgba(70, 70, 70, 0.95);
+      transform: scale(1.03);
       box-shadow: 0 6px 15px rgba(0,0,0,0.4);
     }
 
-    /* Panel derecho */
+    .card-btn {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+
+    .btn-editar { background-color: #2196F3; color: white; }
+    .btn-eliminar { background-color: #e53935; color: white; }
+    .btn-seleccionar { background-color: #8bc34a; color: white; }
+
+    .btn-editar:hover { background-color: #1e88e5; }
+    .btn-eliminar:hover { background-color: #d32f2f; }
+    .btn-seleccionar:hover { background-color: #7cb342; }
+
     .detalle {
       width: 55%;
       display: flex;
@@ -101,15 +106,14 @@
     }
 
     .detalle img {
-      width: 200px;
-      height: 200px;
+      width: 220px;
+      height: 220px;
       object-fit: contain;
       margin-bottom: 15px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(255,255,255,0.15);
     }
 
-    /* Botón Agregar */
     .btn-agregar {
       background: #4CAF50;
       color: white;
@@ -126,7 +130,6 @@
       transform: scale(1.05);
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -143,6 +146,7 @@
       width: 400px;
       border-radius: 15px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
     }
 
     input {
@@ -153,21 +157,16 @@
       border-radius: 5px;
     }
 
-    h2, h3 { margin-bottom: 10px; }
-    p { margin: 4px 0; }
   </style>
 </head>
 <body>
-  <!-- Barra superior -->
   <div class="barra-superior">
     <a href="{{ url_for('lobby') }}" class="btn-regresar">⟵ Regresar al lobby</a>
     <h1>Gestión de Mascotas</h1>
     <div></div>
   </div>
 
-  <!-- Contenido principal -->
   <div class="contenedor">
-    <!-- Panel izquierdo -->
     <div class="lista">
       <h2>Mis Mascotas</h2>
       {% for m in mascotas %}
@@ -175,25 +174,27 @@
         <h3>{{ m[1] }}</h3>
         <p><b>Tipo:</b> {{ m[2] }}</p>
         <p><b>Nivel:</b> {{ m[3] }}</p>
+        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarMascota({{ m[0] }}, '{{ m[1] }}', '{{ m[2] }}', {{ m[3] }})">✏️ Editar</button>
+        <button class="card-btn btn-eliminar" onclick="event.stopPropagation(); eliminarMascota({{ m[0] }})">🗑️ Eliminar</button>
+        <button class="card-btn btn-seleccionar" onclick="event.stopPropagation(); seleccionarMascota({{ m[0] }})">⭐ Seleccionar</button>
       </div>
       {% endfor %}
       <button class="btn-agregar" onclick="openModal()">+ Agregar Mascota</button>
     </div>
 
-    <!-- Panel derecho -->
     <div class="detalle" id="detalle">
       <h2>Selecciona una mascota</h2>
     </div>
   </div>
 
-  <!-- Modal -->
   <div id="modalAgregar" class="modal">
     <div class="modal-content">
-      <h2>Nueva Mascota</h2>
-      <form method="POST">
-        <input type="text" name="nombre" placeholder="Nombre" required><br>
-        <input type="text" name="tipo" placeholder="Tipo" required><br>
-        <input type="number" name="nivel" placeholder="Nivel" value="1" min="1"><br>
+      <h2 id="tituloModal">Nueva Mascota</h2>
+      <form method="POST" id="formMascota">
+        <input type="hidden" name="id_mascota" id="id_mascota">
+        <input type="text" name="nombre" id="nombre" placeholder="Nombre" required><br>
+        <input type="text" name="tipo" id="tipo" placeholder="Tipo (Ej: Dragón, Lobo...)" required><br>
+        <input type="number" name="nivel" id="nivel" placeholder="Nivel" min="1" value="1" required><br>
         <button type="submit" class="btn-agregar">Guardar</button>
         <button type="button" onclick="closeModal()">Cancelar</button>
       </form>
@@ -220,11 +221,37 @@
     }
 
     function openModal() {
+      document.getElementById("formMascota").reset();
+      document.getElementById("id_mascota").value = "";
+      document.getElementById("tituloModal").innerText = "Nueva Mascota";
       document.getElementById("modalAgregar").style.display = "block";
     }
 
     function closeModal() {
       document.getElementById("modalAgregar").style.display = "none";
+    }
+
+    function editarMascota(id, nombre, tipo, nivel) {
+      document.getElementById("id_mascota").value = id;
+      document.getElementById("nombre").value = nombre;
+      document.getElementById("tipo").value = tipo;
+      document.getElementById("nivel").value = nivel;
+      document.getElementById("tituloModal").innerText = "Editar Mascota";
+      document.getElementById("modalAgregar").style.display = "block";
+    }
+
+    async function eliminarMascota(id) {
+      if (confirm("¿Seguro que deseas eliminar esta mascota?")) {
+        const res = await fetch(`/eliminar_mascota/${id}`, { method: "DELETE" });
+        if (res.ok) location.reload();
+        else alert("Error al eliminar mascota.");
+      }
+    }
+
+    async function seleccionarMascota(id) {
+      const res = await fetch(`/seleccionar_mascota/${id}`, { method: "POST" });
+      if (res.ok) alert("✅ Mascota seleccionada correctamente.");
+      else alert("Error al seleccionar mascota.");
     }
   </script>
 </body>
