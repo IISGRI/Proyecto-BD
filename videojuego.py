@@ -11,12 +11,36 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 
 # ==========================================
-# CONEXIÓN A LA BASE DE DATOS
+# CONEXIÓN A LA BASE DE DATOS (con pool)
 # ==========================================
+from psycopg2 import pool
+
 def get_db_connection():
     import psycopg2, os
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
-    return conn
+
+    # Si no existe el pool, se crea una sola vez
+    if not hasattr(app, 'db_pool'):
+        try:
+            app.db_pool = psycopg2.pool.SimpleConnectionPool(
+                minconn=1,
+                maxconn=5,
+                dsn=os.getenv("DATABASE_URL"),
+                sslmode='require'
+            )
+            print("✅ Pool de conexiones creado correctamente.")
+        except Exception as e:
+            print("❌ Error al crear el pool de conexiones:", e)
+            raise
+
+    # Intentar obtener una conexión del pool
+    try:
+        conn = app.db_pool.getconn()
+        return conn
+    except Exception as e:
+        print("⚠️ Error obteniendo conexión del pool:", e)
+        # Si hay error, reiniciamos el pool
+        app.db_pool = None
+        raise
 
 # ==========================================
 # LOGIN / REGISTRO / SESIÓN
@@ -37,7 +61,7 @@ def login():
         """, (correo, contrasena))
         user = cur.fetchone()
         cur.close()
-        conn.close()
+        app.db_pool.putconn(conn)
 
         if user:
             session['usuario'] = user[1]
@@ -66,7 +90,7 @@ def registro():
             """, (usuario, correo, contrasena))
             conn.commit()
             cur.close()
-            conn.close()
+            app.db_pool.putconn(conn)
             flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
@@ -166,7 +190,7 @@ def lobby():
         }
 
     cur.close()
-    conn.close()
+    app.db_pool.putconn(conn)
     return render_template('lobby.html', jugador=jugador, personaje=personaje, mascota=mascota)
 
 # ==========================================
@@ -215,7 +239,7 @@ def personajes():
     personajes = cur.fetchall()
 
     cur.close()
-    conn.close()
+    app.db_pool.putconn(conn)
 
     return render_template('personajes.html', personajes=personajes)
 
@@ -240,7 +264,7 @@ def eliminar_personaje(id_personaje):
         return jsonify({"error": str(e)}), 400
     finally:
         cur.close()
-        conn.close()
+        app.db_pool.putconn(conn)
 
 
 @app.route('/seleccionar_personaje/<int:id_personaje>', methods=['POST'])
@@ -263,7 +287,7 @@ def seleccionar_personaje(id_personaje):
         return jsonify({"error": str(e)}), 400
     finally:
         cur.close()
-        conn.close()
+        app.db_pool.putconn(conn)
 
 # ==========================================
 # MASCOTAS
@@ -321,7 +345,7 @@ def mascotas():
     mascotas = cur.fetchall()
 
     cur.close()
-    conn.close()
+    app.db_pool.putconn(conn)
     return render_template('mascotas.html', mascotas=mascotas)
 
 @app.route('/eliminar_mascota/<int:id_mascota>', methods=['DELETE'])
@@ -344,7 +368,7 @@ def eliminar_mascota(id_mascota):
         return jsonify({"error": str(e)}), 400
     finally:
         cur.close()
-        conn.close()
+        app.db_pool.putconn(conn)
 
 
 @app.route('/seleccionar_mascota/<int:id_mascota>', methods=['POST'])
@@ -367,7 +391,7 @@ def seleccionar_mascota(id_mascota):
         return jsonify({"error": str(e)}), 400
     finally:
         cur.close()
-        conn.close()
+        app.db_pool.putconn(conn)
 
 # ==========================================
 # API
@@ -379,7 +403,7 @@ def obtener_mascota(id_mascota):
     cur.execute("SELECT id_mascota, nombre_mascota, tipo, nivel FROM mascota WHERE id_mascota = %s;", (id_mascota,))
     mascota = cur.fetchone()
     cur.close()
-    conn.close()
+    app.db_pool.putconn(conn)
     if mascota:
         return jsonify({
             "id_mascota": mascota[0],
@@ -404,7 +428,7 @@ def obtener_personaje(id_personaje):
     """, (id_personaje,))
     personaje = cur.fetchone()
     cur.close()
-    conn.close()
+    app.db_pool.putconn(conn)
 
     if personaje:
         return jsonify({
