@@ -11,14 +11,14 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 
 # ==========================================
-# CONEXIÓN A LA BASE DE DATOS (con pool)
+# CONEXIÓN A LA BASE DE DATOS (usando pool)
 # ==========================================
 from psycopg2 import pool
 
 def get_db_connection():
     import psycopg2, os
 
-    # Si no existe el pool, se crea una sola vez
+    # Si el pool no existe, lo crea una sola vez
     if not hasattr(app, 'db_pool'):
         try:
             app.db_pool = psycopg2.pool.SimpleConnectionPool(
@@ -38,7 +38,6 @@ def get_db_connection():
         return conn
     except Exception as e:
         print("⚠️ Error obteniendo conexión del pool:", e)
-        # Si hay error, reiniciamos el pool
         app.db_pool = None
         raise
 
