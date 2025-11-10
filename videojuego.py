@@ -14,7 +14,8 @@ app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 # CONEXIÓN A LA BASE DE DATOS
 # ==========================================
 def get_db_connection():
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+    import psycopg2, os
+    conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
     return conn
 
 # ==========================================
