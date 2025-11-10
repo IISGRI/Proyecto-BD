@@ -156,7 +156,6 @@
       border: none;
       border-radius: 5px;
     }
-
   </style>
 </head>
 <body>
@@ -174,7 +173,7 @@
         <h3>{{ m[1] }}</h3>
         <p><b>Tipo:</b> {{ m[2] }}</p>
         <p><b>Nivel:</b> {{ m[3] }}</p>
-        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarMascota({{ m[0] }}, '{{ m[1] }}', '{{ m[2] }}', {{ m[3] }})">✏️ Editar</button>
+        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarMascota({{ m[0] }}, '{{ m[1] }}', '{{ m[2] }}')">✏️ Editar</button>
         <button class="card-btn btn-eliminar" onclick="event.stopPropagation(); eliminarMascota({{ m[0] }})">🗑️ Eliminar</button>
         <button class="card-btn btn-seleccionar" onclick="event.stopPropagation(); seleccionarMascota({{ m[0] }})">⭐ Seleccionar</button>
       </div>
@@ -194,7 +193,6 @@
         <input type="hidden" name="id_mascota" id="id_mascota">
         <input type="text" name="nombre" id="nombre" placeholder="Nombre" required><br>
         <input type="text" name="tipo" id="tipo" placeholder="Tipo (Ej: Dragón, Lobo...)" required><br>
-        <input type="number" name="nivel" id="nivel" placeholder="Nivel" min="1" value="1" required><br>
         <button type="submit" class="btn-agregar">Guardar</button>
         <button type="button" onclick="closeModal()">Cancelar</button>
       </form>
@@ -231,11 +229,10 @@
       document.getElementById("modalAgregar").style.display = "none";
     }
 
-    function editarMascota(id, nombre, tipo, nivel) {
+    function editarMascota(id, nombre, tipo) {
       document.getElementById("id_mascota").value = id;
       document.getElementById("nombre").value = nombre;
       document.getElementById("tipo").value = tipo;
-      document.getElementById("nivel").value = nivel;
       document.getElementById("tituloModal").innerText = "Editar Mascota";
       document.getElementById("modalAgregar").style.display = "block";
     }

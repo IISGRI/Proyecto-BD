@@ -281,32 +281,37 @@ def mascotas():
         id_mascota = request.form.get('id_mascota')
         nombre = request.form['nombre']
         tipo = request.form['tipo']
-        nivel = request.form['nivel']
         id_jugador = session['id_jugador']
 
         try:
-            if id_mascota:
+            if id_mascota and id_mascota.strip() != "":
+                # 🔹 Modificar mascota existente
                 cur.execute("""
                     UPDATE mascota
-                    SET nombre_mascota = %s, tipo = %s, nivel = %s
+                    SET nombre_mascota = %s, tipo = %s
                     WHERE id_mascota = %s
-                    AND id_personaje IN (SELECT id_personaje FROM personaje WHERE id_jugador = %s);
-                """, (nombre, tipo, nivel, id_mascota, id_jugador))
+                    AND id_personaje IN (
+                        SELECT id_personaje FROM personaje WHERE id_jugador = %s
+                    );
+                """, (nombre, tipo, id_mascota, id_jugador))
                 flash('✅ Mascota modificada correctamente.', 'success')
             else:
+                # 🔹 Crear nueva mascota
                 cur.execute("""
                     INSERT INTO mascota (id_personaje, nombre_mascota, tipo, nivel)
                     VALUES (
                         (SELECT id_personaje FROM personaje WHERE id_jugador = %s LIMIT 1),
-                        %s, %s, %s
+                        %s, %s, 1
                     );
-                """, (id_jugador, nombre, tipo, nivel))
+                """, (id_jugador, nombre, tipo))
                 flash('🆕 Mascota creada correctamente.', 'success')
+
             conn.commit()
         except Exception as e:
             conn.rollback()
             flash(f'⚠️ Error al guardar mascota: {e}', 'error')
 
+    # 🔹 Cargar todas las mascotas del jugador
     cur.execute("""
         SELECT m.id_mascota, m.nombre_mascota, m.tipo, m.nivel
         FROM mascota m
@@ -318,7 +323,6 @@ def mascotas():
     cur.close()
     conn.close()
     return render_template('mascotas.html', mascotas=mascotas)
-
 
 @app.route('/eliminar_mascota/<int:id_mascota>', methods=['DELETE'])
 def eliminar_mascota(id_mascota):
