@@ -15,41 +15,34 @@ app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 # CONEXIÓN A LA BASE DE DATOS (usando pool)
 # ==========================================
 
-def get_db_connection(retry=True):
+def get_db_connection(max_retries=5, wait_time=5):
     import psycopg2, os, time
 
-    # Crear pool si no existe
-    if not hasattr(app, 'db_pool') or app.db_pool is None:
+    for attempt in range(max_retries):
         try:
-            app.db_pool = psycopg2.pool.SimpleConnectionPool(
-                minconn=1,
-                maxconn=5,
-                dsn=os.getenv("DATABASE_URL"),
-                sslmode='require'
-            )
-            print("✅ Pool de conexiones creado correctamente.")
+            # Crear pool si no existe
+            if not hasattr(app, 'db_pool') or app.db_pool is None:
+                app.db_pool = psycopg2.pool.SimpleConnectionPool(
+                    minconn=1,
+                    maxconn=5,
+                    dsn=os.getenv("DATABASE_URL"),
+                    sslmode='require'
+                )
+                print("✅ Pool de conexiones creado correctamente.")
+
+            # Obtener conexión del pool
+            conn = app.db_pool.getconn()
+            return conn
+
         except Exception as e:
-            print("❌ Error al crear el pool de conexiones:", e)
-            raise
+            print(f"⚠️ Intento {attempt+1}/{max_retries} fallido para conectar: {e}")
+            if hasattr(app, 'db_pool'):
+                app.db_pool = None
+            time.sleep(wait_time)
 
-    # Intentar obtener conexión del pool
-    try:
-        conn = app.db_pool.getconn()
-        return conn
+    print("❌ No se pudo conectar a la base después de varios intentos.")
+    raise Exception("Error persistente al conectar a la base de datos.")
 
-    except Exception as e:
-        print("⚠️ Error al obtener conexión:", e)
-        # Reiniciar el pool si hay fallo
-        if hasattr(app, 'db_pool'):
-            app.db_pool = None
-
-        # Reintentar una vez después de unos segundos
-        if retry:
-            print("🔁 Reintentando conexión a la base en 3 segundos...")
-            time.sleep(3)
-            return get_db_connection(retry=False)
-        else:
-            raise
 
 # ==========================================
 # LOGIN / REGISTRO / SESIÓN
@@ -407,22 +400,17 @@ def seleccionar_mascota(id_mascota):
 @app.route("/ping")
 def ping():
     try:
-        # Intentar hacer una pequeña consulta para comprobar conexión
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT NOW();")
         cur.fetchone()
         cur.close()
         app.db_pool.putconn(conn)
-        print("✅ Ping exitoso: conexión a la base activa.")
+        print("✅ Ping exitoso (base activa).")
         return "OK", 200
-
     except Exception as e:
         print(f"⚠️ Ping fallido, posible BD dormida o no disponible: {e}")
-        # Intentar reiniciar el pool si está caído
-        if hasattr(app, "db_pool"):
-            app.db_pool = None
-        return "Database asleep or unreachable", 200  # 200 evita que el cron lo marque como error
+        return "Database waking up", 200
 
 
 @app.route('/api/mascota/<int:id_mascota>')
