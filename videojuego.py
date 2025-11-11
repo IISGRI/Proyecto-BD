@@ -15,12 +15,11 @@ app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 # CONEXIÓN A LA BASE DE DATOS (usando pool)
 # ==========================================
 
-def get_db_connection(max_retries=5, wait_time=5):
+def get_db_connection(max_retries=12, wait_time=10):
     import psycopg2, os, time
 
     for attempt in range(max_retries):
         try:
-            # Crear pool si no existe
             if not hasattr(app, 'db_pool') or app.db_pool is None:
                 app.db_pool = psycopg2.pool.SimpleConnectionPool(
                     minconn=1,
@@ -30,7 +29,6 @@ def get_db_connection(max_retries=5, wait_time=5):
                 )
                 print("✅ Pool de conexiones creado correctamente.")
 
-            # Obtener conexión del pool
             conn = app.db_pool.getconn()
             return conn
 
@@ -38,11 +36,13 @@ def get_db_connection(max_retries=5, wait_time=5):
             print(f"⚠️ Intento {attempt+1}/{max_retries} fallido para conectar: {e}")
             if hasattr(app, 'db_pool'):
                 app.db_pool = None
+
+            if "Connection refused" in str(e):
+                print("💤 Supabase parece dormida, esperando que despierte...")
             time.sleep(wait_time)
 
-    print("❌ No se pudo conectar a la base después de varios intentos.")
+    print("❌ No se pudo conectar a la base después de varios intentos prolongados.")
     raise Exception("Error persistente al conectar a la base de datos.")
-
 
 # ==========================================
 # LOGIN / REGISTRO / SESIÓN
@@ -406,10 +406,10 @@ def ping():
         cur.fetchone()
         cur.close()
         app.db_pool.putconn(conn)
-        print("✅ Ping exitoso (base activa).")
+        print("✅ Ping exitoso: conexión a la base activa.")
         return "OK", 200
     except Exception as e:
-        print(f"⚠️ Ping fallido, posible BD dormida o no disponible: {e}")
+        print(f"⚠️ Ping fallido, base posiblemente dormida: {e}")
         return "Database waking up", 200
 
 
