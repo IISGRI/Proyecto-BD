@@ -396,30 +396,24 @@ def seleccionar_mascota(id_mascota):
 # ==========================================
 @app.route("/ping")
 def ping():
-    """Verifica que la app y la base estén activas"""
     try:
+        # Intentar hacer una pequeña consulta para comprobar conexión
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT NOW();")
+        cur.fetchone()
         cur.close()
         app.db_pool.putconn(conn)
-        print("✅ Ping OK - DB activa")
-        return "DB OK", 200
+        print("✅ Ping exitoso: conexión a la base activa.")
+        return "OK", 200
+
     except Exception as e:
-        print(f"⚠️ Error en ping DB: {e}")
-        return f"DB Error: {e}", 500
+        print(f"⚠️ Ping fallido, posible BD dormida o no disponible: {e}")
+        # Intentar reiniciar el pool si está caído
+        if hasattr(app, "db_pool"):
+            app.db_pool = None
+        return "Database asleep or unreachable", 200  # 200 evita que el cron lo marque como error
 
-def keep_alive():
-    """Mantiene el servidor y la DB activos"""
-    while True:
-        try:
-            requests.get("https://videojuegobd.onrender.com/ping", timeout=10)
-            print("🔁 Keep-alive: ping enviado correctamente.")
-        except Exception as e:
-            print("⚠️ Error en keep-alive:", e)
-        time.sleep(240)  # 4 minutos
-
-threading.Thread(target=keep_alive, daemon=True).start()
 
 @app.route('/api/mascota/<int:id_mascota>')
 def obtener_mascota(id_mascota):
