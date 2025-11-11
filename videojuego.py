@@ -15,11 +15,11 @@ app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 # CONEXIÓN A LA BASE DE DATOS (usando pool)
 # ==========================================
 
-def get_db_connection():
-    import psycopg2, os
+def get_db_connection(retry=True):
+    import psycopg2, os, time
 
-    # Si el pool no existe, lo crea una sola vez
-    if not hasattr(app, 'db_pool'):
+    # Crear pool si no existe
+    if not hasattr(app, 'db_pool') or app.db_pool is None:
         try:
             app.db_pool = psycopg2.pool.SimpleConnectionPool(
                 minconn=1,
@@ -32,14 +32,24 @@ def get_db_connection():
             print("❌ Error al crear el pool de conexiones:", e)
             raise
 
-    # Intentar obtener una conexión del pool
+    # Intentar obtener conexión del pool
     try:
         conn = app.db_pool.getconn()
         return conn
+
     except Exception as e:
-        print("⚠️ Error obteniendo conexión del pool:", e)
-        app.db_pool = None
-        raise
+        print("⚠️ Error al obtener conexión:", e)
+        # Reiniciar el pool si hay fallo
+        if hasattr(app, 'db_pool'):
+            app.db_pool = None
+
+        # Reintentar una vez después de unos segundos
+        if retry:
+            print("🔁 Reintentando conexión a la base en 3 segundos...")
+            time.sleep(3)
+            return get_db_connection(retry=False)
+        else:
+            raise
 
 # ==========================================
 # LOGIN / REGISTRO / SESIÓN
