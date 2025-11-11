@@ -108,10 +108,13 @@ def logout():
 # ==========================================
 # LOBBY PRINCIPAL
 # ==========================================
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 @app.route("/ping")
 def ping():
     return "OK", 200
-
 
 @app.route('/lobby')
 def lobby():
