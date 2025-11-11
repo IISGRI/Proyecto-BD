@@ -3,6 +3,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 import threading, time, requests
+from psycopg2 import pool
 # ==========================================
 # CONFIGURACIÓN INICIAL
 # ==========================================
@@ -13,7 +14,6 @@ app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 # ==========================================
 # CONEXIÓN A LA BASE DE DATOS (usando pool)
 # ==========================================
-from psycopg2 import pool
 
 def get_db_connection():
     import psycopg2, os
@@ -111,10 +111,6 @@ def logout():
 @app.route('/')
 def index():
     return redirect(url_for('login'))
-
-@app.route("/ping")
-def ping():
-    return "OK", 200
 
 @app.route('/lobby')
 def lobby():
@@ -396,8 +392,35 @@ def seleccionar_mascota(id_mascota):
         app.db_pool.putconn(conn)
 
 # ==========================================
-# API
+# API Y UTILIDADES
 # ==========================================
+@app.route("/ping")
+def ping():
+    """Verifica que la app y la base estén activas"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT NOW();")
+        cur.close()
+        app.db_pool.putconn(conn)
+        print("✅ Ping OK - DB activa")
+        return "DB OK", 200
+    except Exception as e:
+        print(f"⚠️ Error en ping DB: {e}")
+        return f"DB Error: {e}", 500
+
+def keep_alive():
+    """Mantiene el servidor y la DB activos"""
+    while True:
+        try:
+            requests.get("https://videojuegobd.onrender.com/ping", timeout=10)
+            print("🔁 Keep-alive: ping enviado correctamente.")
+        except Exception as e:
+            print("⚠️ Error en keep-alive:", e)
+        time.sleep(240)  # 4 minutos
+
+threading.Thread(target=keep_alive, daemon=True).start()
+
 @app.route('/api/mascota/<int:id_mascota>')
 def obtener_mascota(id_mascota):
     conn = get_db_connection()
@@ -415,10 +438,7 @@ def obtener_mascota(id_mascota):
         })
     else:
         return jsonify({"error": "Mascota no encontrada"}), 404
-
-# ==========================================
-# API PERSONAJE
-# ==========================================
+    
 @app.route('/api/personaje/<int:id_personaje>')
 def obtener_personaje(id_personaje):
     conn = get_db_connection()
@@ -455,23 +475,6 @@ def gremio():
 @app.route('/logros')
 def logros():
     return render_template('logros.html')
-
-# ==========================================
-# MANTENER SERVIDOR ACTIVO (keep-alive)
-# ==========================================
-
-def keep_alive():
-    while True:
-        try:
-            # Enviar ping cada 4 minutos a tu endpoint
-            requests.get("https://videojuegobd.onrender.com/ping", timeout=10)
-            print("🔁 Keep-alive: ping enviado correctamente.")
-        except Exception as e:
-            print("⚠️ Error en keep-alive:", e)
-        time.sleep(240)  # 4 minutos (240 segundos)
-
-# Ejecutar el hilo de keep-alive en segundo plano
-threading.Thread(target=keep_alive, daemon=True).start()
 
 # ==========================================
 # EJECUCIÓN
