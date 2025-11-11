@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 import psycopg2
 import os
 from dotenv import load_dotenv
-
+import threading, time, requests
 # ==========================================
 # CONFIGURACIÓN INICIAL
 # ==========================================
@@ -455,6 +455,23 @@ def gremio():
 @app.route('/logros')
 def logros():
     return render_template('logros.html')
+
+# ==========================================
+# MANTENER SERVIDOR ACTIVO (keep-alive)
+# ==========================================
+
+def keep_alive():
+    while True:
+        try:
+            # Enviar ping cada 4 minutos a tu endpoint
+            requests.get("https://videojuegobd.onrender.com/ping", timeout=10)
+            print("🔁 Keep-alive: ping enviado correctamente.")
+        except Exception as e:
+            print("⚠️ Error en keep-alive:", e)
+        time.sleep(240)  # 4 minutos (240 segundos)
+
+# Ejecutar el hilo de keep-alive en segundo plano
+threading.Thread(target=keep_alive, daemon=True).start()
 
 # ==========================================
 # EJECUCIÓN
