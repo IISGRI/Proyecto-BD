@@ -1,33 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icons/iconoSF.png') }}">
-  <meta charset="UTF-8">
-  <title>Logros</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
-    body { background:#f0f4f8; color:#333; display:flex; flex-direction:column; align-items:center; padding:40px 20px;}
-    h1 { margin-bottom:20px; color:#1f2937; text-shadow:1px 1px 2px rgba(0,0,0,0.1);}
-    nav a { margin: 0 10px; text-decoration:none; color:#007bff;}
-    nav a:hover { text-decoration:underline;}
-    ul { list-style:none; width:100%; max-width:400px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-    li { padding:10px 0; border-bottom:1px solid #e5e7eb;}
-    li:last-child { border-bottom:none;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logros</title>
 </head>
 <body>
-  <nav>
-    <a href="/">Lobby</a> |
-    <a href="/personajes">Personajes</a> |
-    <a href="/inventario">Inventario</a> |
-    <a href="/gremio">Gremio</a> |
-    <a href="/logros">Logros</a>
-  </nav>
-  <h1>Logros</h1>
-  <ul>
-    <li>Primer nivel completado</li>
-    <li>Derrotaste al jefe del gremio</li>
-    <li>100 monedas recolectadas</li>
-  </ul>
+
+<!-- ======================= MENSAJES FLASH ======================= -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ======================= TÍTULO ======================= -->
+<h1 class="titulo">🎖️ Logros del Jugador</h1>
+
+<!-- ======================= LISTA DE LOGROS ======================= -->
+<div class="contenedor-logros">
+    {% if logros %}
+        {% for logro in logros %}
+            <div class="logro-card {% if logro.desbloqueado %}completado{% else %}pendiente{% endif %}">
+                
+                <div class="logro-icono">
+                    {% if logro.desbloqueado %}
+                        🟢
+                    {% else %}
+                        ⚪
+                    {% endif %}
+                </div>
+
+                <div class="logro-info">
+                    <h3>{{ logro.nombre_logro }}</h3>
+                    <p>{{ logro.descripcion_logro }}</p>
+
+                    {% if logro.desbloqueado %}
+                        <span class="estado desbloqueado">Desbloqueado ✔</span>
+                    {% else %}
+                        <span class="estado pendiente">Pendiente ✖</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-logros">No tienes logros registrados.</p>
+    {% endif %}
+</div>
+
+<!-- ======================= BOTÓN VOLVER ======================= -->
+<div class="volver-contenedor">
+    <a href="{{ url_for('lobby') }}" class="btn-volver">⬅ Volver al Lobby</a>
+</div>
+
+<!-- ======================= CSS INTERNO ======================= -->
+<style>
+    body {
+        background: #222;
+        color: white;
+        font-family: Arial, sans-serif;
+        padding: 30px;
+    }
+
+    .titulo {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 2em;
+        letter-spacing: 1px;
+    }
+
+    .contenedor-logros {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .logro-card {
+        display: flex;
+        background-color: rgba(255,255,255,0.08);
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border-left: 6px solid #888;
+        transition: transform .2s ease;
+    }
+
+    .logro-card:hover {
+        transform: translateX(5px);
+    }
+
+    .completado {
+        border-left-color: #27ae60;
+    }
+
+    .pendiente {
+        border-left-color: #c0392b;
+    }
+
+    .logro-icono {
+        font-size: 2.2em;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .logro-info h3 {
+        margin: 0 0 5px;
+        font-size: 1.2em;
+    }
+
+    .estado {
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.9em;
+    }
+
+    .desbloqueado {
+        background-color: #27ae60;
+    }
+
+    .pendiente {
+        background-color: #c0392b;
+    }
+
+    .no-logros {
+        text-align: center;
+        opacity: 0.8;
+        font-size: 1.1em;
+        margin-top: 40px;
+    }
+
+    /* ------------------ BOTÓN VOLVER ------------------ */
+
+    .volver-contenedor {
+        text-align: center;
+        margin-top: 35px;
+    }
+
+    .btn-volver {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-size: 1.1em;
+        font-weight: bold;
+        transition: background-color 0.25s ease, transform 0.25s ease;
+        display: inline-block;
+    }
+
+    .btn-volver:hover {
+        background-color: #43a047;
+        transform: scale(1.05);
+    }
+
+    .btn-volver:active {
+        transform: scale(0.96);
+    }
+
+    /* ------------------ FLASH MESSAGES ------------------ */
+    .flash-container {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+
+    .flash {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .flash.success { background-color: #28a745; }
+    .flash.error { background-color: #dc3545; }
+    .flash.warning { background-color: #ffc107; color: #222; }
+    .flash.info { background-color: #17a2b8; }
+</style>
+
 </body>
 </html>

@@ -1,33 +1,230 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icons/iconoSF.png') }}">
-  <meta charset="UTF-8">
-  <title>Inventario</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
-    body { background:#f0f4f8; color:#333; display:flex; flex-direction:column; align-items:center; padding:40px 20px;}
-    h1 { margin-bottom:20px; color:#1f2937; text-shadow:1px 1px 2px rgba(0,0,0,0.1);}
-    nav a { margin: 0 10px; text-decoration:none; color:#007bff;}
-    nav a:hover { text-decoration:underline;}
-    ul { list-style:none; width:100%; max-width:400px; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-    li { padding:10px 0; border-bottom:1px solid #e5e7eb;}
-    li:last-child { border-bottom:none;}
-  </style>
+    <meta charset="UTF-8">
+    <title>Inventario</title>
 </head>
 <body>
-  <nav>
-    <a href="/">Lobby</a> |
-    <a href="/personajes">Personajes</a> |
-    <a href="/inventario">Inventario</a> |
-    <a href="/gremio">Gremio</a> |
-    <a href="/logros">Logros</a>
-  </nav>
-  <h1>Inventario</h1>
-  <ul>
-    <li>Espada de fuego</li>
-    <li>Escudo de acero</li>
-    <li>Poción de salud x5</li>
-  </ul>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<h2>Inventario de {{ personaje.nombre }}</h2>
+
+<!-- ======== BOTÓN VOLVER A LOBBY ======== -->
+<button onclick="window.location.href='{{ url_for('lobby') }}'" class="btn-volver">
+    ← Volver al Lobby
+</button>
+
+<!-- ======== BOTONES DE CATEGORÍA ======== -->
+<div class="categoria-selector">
+    <a href="{{ url_for('inventario', tipo='pociones') }}" class="cat-btn {% if categoria=='pociones' %}activo{% endif %}">Pociones</a>
+    <a href="{{ url_for('inventario', tipo='armas') }}" class="cat-btn {% if categoria=='armas' %}activo{% endif %}">Armas</a>
+    <a href="{{ url_for('inventario', tipo='armaduras') }}" class="cat-btn {% if categoria=='armaduras' %}activo{% endif %}">Armaduras</a>
+</div>
+
+<hr>
+
+<!-- ======== LISTA DE OBJETOS ======== -->
+<h3>Objetos en esta categoría</h3>
+
+{% if inventario %}
+<table border="1" class="tabla">
+    <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for obj in inventario %}
+    <tr>
+        <td>{{ obj.nombre }}</td>
+        <td>{{ obj.descripcion }}</td>
+        <td>{{ obj.cantidad }}</td>
+        <td>
+            <a href="{{ url_for('inventario_eliminar', id_objeto=obj.id_objeto) }}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% else %}
+<p>No hay objetos registrados en esta categoría.</p>
+{% endif %}
+
+<hr>
+
+<!-- ======== FORMULARIO AGREGAR OBJETO EXISTENTE ======== -->
+<h3>Agregar objeto existente</h3>
+
+<form method="POST" action="{{ url_for('inventario_agregar_existente') }}">
+    <label>Objeto:</label>
+    <select name="id_objeto" required>
+        {% for obj in objetos_existentes %}
+            <option value="{{ obj.id_objeto }}">{{ obj.nombre }} ({{ obj.tipo }})</option>
+        {% endfor %}
+    </select>
+
+    <label>Cantidad:</label>
+    <input type="number" name="cantidad" min="1" value="1" required>
+
+    <button type="submit">Agregar</button>
+</form>
+
+<hr>
+
+<!-- ======== FORMULARIO CREAR NUEVO OBJETO ======== -->
+<h3>Crear nuevo objeto</h3>
+
+<form method="POST" action="{{ url_for('inventario_crear') }}">
+    
+    <label>Nombre del objeto:</label>
+    <input type="text" name="nombre" required>
+
+    <label>Descripción:</label>
+    <input type="text" name="descripcion" required>
+
+    <label>Valor:</label>
+    <input type="number" name="valor" min="0" value="0">
+
+    <label>Rareza:</label>
+    <select name="rareza">
+        <option>Común</option>
+        <option>Poco común</option>
+        <option>Raro</option>
+        <option>Épico</option>
+        <option>Legendario</option>
+    </select>
+
+    <label>Tipo:</label>
+    <select name="tipo" required>
+        <option value="pocion">Poción</option>
+        <option value="arma">Arma</option>
+        <option value="armadura">Armadura</option>
+    </select>
+
+    <!-- Campo especial según el tipo -->
+    <label>Efecto (para pociones) / Daño (arma) / Defensa (armadura):</label>
+    <input type="text" name="extra" required>
+
+    <button type="submit">Crear objeto</button>
+</form>
+
+
+<!-- ======== CSS ======== -->
+<style>
+    body {
+        font-family: Arial;
+        background: #202020;
+        color: white;
+        padding: 20px;
+    }
+
+    h2, h3 { color: #00bfff; }
+
+    .categoria-selector {
+        margin-bottom: 15px;
+    }
+
+    .cat-btn {
+        padding: 10px 15px;
+        background: #333;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-right: 10px;
+    }
+
+    .cat-btn.activo {
+        background: #00bfff;
+        font-weight: bold;
+    }
+
+    .tabla {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background: #2b2b2b;
+    }
+
+    .tabla th, .tabla td {
+        padding: 10px;
+        border: 1px solid #444;
+    }
+
+    .btn-volver {
+        background: #ff5555;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .btn-volver:hover {
+        background: #ff7777;
+    }
+
+    form {
+        background: #292929;
+        padding: 15px;
+        border-radius: 8px;
+        width: 60%;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 7px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: none;
+    }
+
+    button {
+        padding: 10px 15px;
+        background: #00bfff;
+        border: none;
+        color: black;
+        cursor: pointer;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    button:hover {
+        background: #33ccff;
+    }
+    .flash-container {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .flash {
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .flash.success { background-color: #28a745; }
+    .flash.error { background-color: #dc3545; }
+    .flash.warning { background-color: #ffc107; color: #222; }
+    .flash.info { background-color: #17a2b8; }
+    
+</style>
+
 </body>
 </html>

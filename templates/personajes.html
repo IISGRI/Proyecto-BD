@@ -158,9 +158,43 @@
       border-radius: 5px;
     }
 
+    .flash-container {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .flash {
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .flash.success { background-color: #28a745; }
+    .flash.error { background-color: #dc3545; }
+    .flash.warning { background-color: #ffc107; color: #222; }
+    .flash.info { background-color: #17a2b8; }
+
   </style>
 </head>
 <body>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
   <div class="barra-superior">
     <a href="{{ url_for('lobby') }}" class="btn-regresar">⟵ Regresar al lobby</a>
     <h1>Gestión de Personajes</h1>
