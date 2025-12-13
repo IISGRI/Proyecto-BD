@@ -933,12 +933,138 @@ def logros():
     return render_template("logros.html", logros=logros)
 
 # ==========================================
-# MARK: RUTAS EXTRA (HTML simple)
+# MARK: GREMIO
 # ==========================================
 
 @app.route('/gremio')
 def gremio():
-    return render_template('gremio.html')
+    if 'id_jugador' not in session:
+        flash("Debes iniciar sesión.", "warning")
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Gremio al que pertenece
+    cur.execute("""
+        SELECT g.id_gremio, g.nombre, g.fecha_fundacion
+        FROM pertenece p
+        JOIN gremio g ON p.id_gremio = g.id_gremio
+        WHERE p.id_jugador = %s
+    """, (session['id_jugador'],))
+    
+    gremio_actual = cur.fetchone()
+
+    if gremio_actual:
+        # Obtener miembros
+        cur.execute("""
+            SELECT j.nombre_usuario, j.nivel
+            FROM pertenece p
+            JOIN jugador j ON p.id_jugador = j.id_jugador
+            WHERE p.id_gremio = %s
+            ORDER BY j.nivel DESC
+        """, (gremio_actual[0],))
+
+        miembros = [{"nombre_usuario": m[0], "nivel": m[1]} for m in cur.fetchall()]
+
+        cur.close()
+        app.db_pool.putconn(conn)
+
+        return render_template("gremio.html",
+                               gremio={
+                                   "id_gremio": gremio_actual[0],
+                                   "nombre": gremio_actual[1],
+                                   "fecha_fundacion": gremio_actual[2],
+                               },
+                               miembros=miembros)
+    else:
+        # Gremios disponibles
+        cur.execute("SELECT id_gremio, nombre, fecha_fundacion FROM gremio ORDER BY id_gremio;")
+        disponibles = [{"id_gremio": g[0], "nombre": g[1], "fecha_fundacion": g[2]} for g in cur.fetchall()]
+
+        cur.close()
+        app.db_pool.putconn(conn)
+
+        return render_template("gremio.html", gremio=None, disponibles=disponibles)
+
+@app.route('/unirse_gremio/<int:id_gremio>', methods=['POST'])
+def unirse_gremio(id_gremio):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            INSERT INTO pertenece (id_jugador, id_gremio)
+            VALUES (%s, %s)
+        """, (session['id_jugador'], id_gremio))
+        conn.commit()
+
+        flash("Te has unido al gremio correctamente.", "success")
+
+    except Exception:
+        flash("Error: ya perteneces a un gremio.", "error")
+
+    cur.close()
+    app.db_pool.putconn(conn)
+
+    return redirect(url_for('gremio'))
+
+@app.route('/abandonar_gremio', methods=['POST'])
+def abandonar_gremio():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        DELETE FROM pertenece
+        WHERE id_jugador = %s
+    """, (session['id_jugador'],))
+
+    conn.commit()
+    cur.close()
+    app.db_pool.putconn(conn)
+
+    flash("Has salido del gremio.", "info")
+    return redirect(url_for('gremio'))
+
+@app.route('/crear_gremio', methods=['POST'])
+def crear_gremio():
+    if 'id_jugador' not in session:
+        flash("Debes iniciar sesión.", "warning")
+        return redirect(url_for('login'))
+
+    nombre = request.form['nombre']
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Crear gremio
+        cur.execute("""
+            INSERT INTO gremio (nombre, fecha_fundacion)
+            VALUES (%s, CURRENT_DATE)
+            RETURNING id_gremio;
+        """, (nombre,))
+
+        id_gremio = cur.fetchone()[0]
+
+        # Asociar jugador al gremio
+        cur.execute("""
+            INSERT INTO pertenece (id_jugador, id_gremio)
+            VALUES (%s, %s);
+        """, (session['id_jugador'], id_gremio))
+
+        conn.commit()
+        flash("Gremio creado y unido correctamente.", "success")
+
+    except Exception as e:
+        conn.rollback()
+        flash("Error al crear gremio. El nombre puede ya existir.", "error")
+        print(e)
+
+    cur.close()
+    app.db_pool.putconn(conn)
+
+    return redirect(url_for('gremio'))
 
 # ==========================================
 # MARK: EJECUCIÓN PRINCIPAL DE FLASK

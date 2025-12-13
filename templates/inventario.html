@@ -50,7 +50,7 @@
         <td>{{ obj.descripcion }}</td>
         <td>{{ obj.cantidad }}</td>
         <td>
-            <a href="{{ url_for('inventario_eliminar', id_objeto=obj.id_objeto) }}">Eliminar</a>
+            <a class = "btn-eliminar" href="{{ url_for('inventario_eliminar', id_objeto=obj.id_objeto) }}">Eliminar</a>
         </td>
     </tr>
     {% endfor %}
@@ -173,7 +173,10 @@
     .btn-volver:hover {
         background: #ff7777;
     }
-
+    .btn-eliminar{
+        color: #ff7777;
+        text-decoration: none;
+    }
     form {
         background: #292929;
         padding: 15px;
@@ -187,6 +190,8 @@
         margin-bottom: 10px;
         border-radius: 5px;
         border: none;
+        background-color: #444;
+        color: rgb(255, 255, 255);
     }
 
     button {
