@@ -1,8 +1,8 @@
 # 🎮 Sistema de Gestión para Videojuego Medieval — Flask + PostgreSQL + Supabase
 
-Este proyecto es una aplicación web completa para gestionar jugadores, personajes, mascotas, inventarios, logros y elementos esenciales de un videojuego con temática medieval.
+Este proyecto es una aplicación web completa para gestionar jugadores, personajes, mascotas, inventarios, gremios, logros y elementos esenciales de un videojuego con temática medieval.
 
-Incluye autenticación segura, panel de lobby dinámico, CRUDs completos, APIs JSON, arquitectura modular, protección contra inyección SQL y un cron que evita que la base de datos se "duerma".
+Incluye autenticación segura, panel de lobby dinámico, CRUDs completos, APIs JSON, arquitectura modular con SQLAlchemy ORM, protección contra inyección SQL y migración automática de contraseñas.
 
 ---
 
@@ -11,10 +11,10 @@ Incluye autenticación segura, panel de lobby dinámico, CRUDs completos, APIs J
 Un estudio de videojuegos enfrentaba un problema serio: sus datos estaban desorganizados. No existía un sistema que:
 
 - Gestionara jugadores de forma segura
-- Permitiera crear/editar personajes
-- Manejara inventarios y mascotas
-- Mostrara estadísticas confiables
-- Identificara jugadores activos/inactivos
+- Permitiera crear/editar personajes y mascotas
+- Manejara inventarios con diferentes tipos de objetos
+- Administrara gremios y membresías
+- Mostrara logros y progreso de jugadores
 - Permitiera generar reportes de rendimiento
 
 Esto producía:
@@ -33,16 +33,18 @@ Era necesario crear un sistema centralizado, seguro y escalable.
 
 Desarrollar una plataforma web robusta que permita:
 
-- ✔ Registro e inicio de sesión seguro
-- ✔ Manejo de contraseñas encriptadas
-- ✔ CRUD de personajes
-- ✔ CRUD de mascotas
+- ✔ Registro e inicio de sesión seguro con migración automática de contraseñas
+- ✔ Manejo de contraseñas encriptadas (Werkzeug + PostgreSQL crypt)
+- ✔ CRUD completo de personajes
+- ✔ CRUD completo de mascotas
+- ✔ Sistema de inventario multi-categoría (pociones, armas, armaduras)
+- ✔ Gestión de gremios (crear, unirse, abandonar)
+- ✔ Sistema de logros desbloqueables
 - ✔ Selección de personaje y mascota activa
-- ✔ Lobby dinámico con datos del jugador
+- ✔ Lobby dinámico con datos del jugador en tiempo real
 - ✔ API REST para integraciones futuras del juego
-- ✔ Seguridad contra SQL Injection
-- ✔ Conexión optimizada con pool
-- ✔ Mantener la base despierta con cron-job
+- ✔ Seguridad contra SQL Injection mediante ORM
+- ✔ Conexión optimizada con pool y auto-reconexión
 
 ---
 
@@ -51,27 +53,34 @@ Desarrollar una plataforma web robusta que permita:
 ### 🔹 Flask (Backend Web)
 Framework ligero y rápido. Maneja autenticación, rutas, sesiones y lógica de negocio. Perfecto para aplicaciones web con estructura modular.
 
+### 🔹 SQLAlchemy ORM
+Mapeo objeto-relacional que protege contra SQL Injection y simplifica las consultas a la base de datos. Proporciona relaciones automáticas entre modelos.
+
+### 🔹 Flask-SQLAlchemy
+Integración de SQLAlchemy con Flask, facilitando la configuración y uso del ORM.
+
+### 🔹 Werkzeug Security
+Sistema de hashing de contraseñas moderno (pbkdf2/scrypt) con migración automática desde PostgreSQL crypt.
+
 ### 🔹 Jinja2 (Motor de Plantillas)
-Permite mezclar HTML con variables de Python, renderizando la interfaz del juego.
+Permite mezclar HTML con variables de Python, renderizando dinámicamente la interfaz del juego.
 
 ### 🔹 PostgreSQL
-Base de datos relacional robusta, ideal para modelos con múltiples entidades relacionadas.
+Base de datos relacional robusta, ideal para modelos con múltiples entidades relacionadas y consultas complejas.
 
 ### 🔹 Supabase
 Hosting de PostgreSQL con funciones avanzadas de seguridad: `crypt()`, `gen_salt()`, hashing tipo Blowfish, etc.
 
 ### 🔹 Render.com
-Alojamiento del backend Flask con despliegue automático desde GitHub.
+Alojamiento del backend Flask con despliegue automático desde GitHub y variables de entorno seguras.
 
-### 🔹 Cron-job.org
-Servicio que realiza peticiones a `/ping` cada pocos minutos para evitar que PostgreSQL se duerma.
-
-### 🔹 Bootstrap / CSS personalizado
-Utilizado para el diseño visual de pantallas del juego.
+### 🔹 Bootstrap + CSS personalizado
+Utilizado para el diseño visual responsivo de todas las pantallas del juego.
 
 ---
 
 ## 📁 4. Estructura de Archivos del Proyecto
+
 ```
 PROYECTO/
 │
@@ -108,6 +117,7 @@ PROYECTO/
 │
 ├── .env
 ├── .gitignore
+├── config.py
 ├── README.md
 ├── requirements.txt
 └── videojuego.py
@@ -132,20 +142,20 @@ Contiene todos los archivos estáticos del proyecto (CSS, imágenes, recursos).
 ### 📂 `/js`
 Scripts JavaScript del cliente.
 
-- `scripts.js` - Lógica JavaScript para interactividad
+- `scripts.js` - Lógica JavaScript para interactividad (CRUD, fetch API)
 
 ### 📂 `/templates`
 Plantillas HTML renderizadas por Jinja2.
 
 - `dashboard.html` - Panel de control principal
-- `gremio.html` - Gestión de gremios
-- `inventario.html` - Sistema de inventario
-- `lobby.html` - Sala de espera/menú principal
-- `login.html` - Página de inicio de sesión
-- `logros.html` - Sistema de logros
-- `mascotas.html` - CRUD de mascotas
-- `personajes.html` - CRUD de personajes
-- `registro.html` - Página de registro
+- `gremio.html` - Gestión de gremios (crear, unirse, abandonar)
+- `inventario.html` - Sistema de inventario multi-categoría
+- `lobby.html` - Sala de espera/menú principal con personaje activo
+- `login.html` - Página de inicio de sesión con migración de contraseñas
+- `logros.html` - Sistema de logros desbloqueables
+- `mascotas.html` - CRUD completo de mascotas
+- `personajes.html` - CRUD completo de personajes
+- `registro.html` - Página de registro con validación
 
 ### 📂 `/venv`
 Entorno virtual de Python (no se sube a Git).
@@ -155,18 +165,22 @@ Entorno virtual de Python (no se sube a Git).
 - **`.dist/`** - Carpeta de distribución/build
 - **`.env`** - Variables de entorno (DATABASE_URL, SECRET_KEY)
 - **`.gitignore`** - Archivos ignorados por Git
-- **`README.md`** - Documentación del proyecto
+- **`config.py`** - Configuración de la aplicación y base de datos
+- **`README.md`** - Documentación del proyecto (este archivo)
 - **`requirements.txt`** - Dependencias de Python
-- **`videojuego.py`** - Aplicación principal Flask (app.py)
+- **`videojuego.py`** - Aplicación principal Flask con todos los modelos y rutas
 
 ### 📌 Flujo general
 
-1. Usuario accede a `/login`
-2. Inicia sesión → sesión segura iniciada
-3. Accede al Lobby
-4. Puede crear/editar personajes y mascotas
-5. Se muestran los datos del jugador en tiempo real
-6. APIs disponibles para integraciones futuras
+1. Usuario accede a `/login` o `/registro`
+2. Sistema valida credenciales y migra contraseñas antiguas automáticamente
+3. Inicia sesión → sesión segura con Flask
+4. Accede al Lobby → ve su personaje y mascota activa
+5. Puede crear/editar personajes y mascotas
+6. Gestiona inventario (pociones, armas, armaduras)
+7. Se une o crea gremios
+8. Desbloquea logros
+9. APIs JSON disponibles para integraciones futuras
 
 ---
 
@@ -177,169 +191,186 @@ Entorno virtual de Python (no se sube a Git).
 - `nombre_usuario`
 - `correo_electronico` (UNIQUE)
 - `contrasena_hash`
-- `experiencia`
-- `nivel`
-- `fecha_hora`
-- `direccion_ip`
-- `id_personaje_activo` (FK)
-- `id_mascota_activa` (FK)
+- `id_personaje_activo` (FK → Personaje)
+- `id_mascota_activa` (FK → Mascota)
+
+**Relaciones:**
+- 1:N con Personaje
+- N:M con Gremio (via Pertenece)
+- N:M con Logro (via Obtiene)
 
 ### ⚔ Tabla: Personaje
 - `id_personaje` (PK)
 - `id_jugador` (FK → Jugador)
 - `nombre`
-- `clase`
-- `nivel`
+- `clase` (Guerrero, Mago, Arquero, etc.)
+- `nivel` (default: 1)
+
+**Relaciones:**
+- N:1 con Jugador
+- 1:N con Mascota
+- N:M con Objeto (via Inventario)
 
 ### 🐾 Tabla: Mascota
 - `id_mascota` (PK)
 - `id_personaje` (FK → Personaje)
 - `nombre_mascota`
-- `tipo`
-- `nivel`
+- `tipo` (Dragón, Lobo, Fénix, etc.)
+- `nivel` (default: 1)
+
+**Relaciones:**
+- N:1 con Personaje
 
 ### 🛡 Tabla: Objeto
 - `id_objeto` (PK)
 - `nombre`
 - `descripcion`
-- `valor`
-- `rareza`
+- `valor` (precio en oro)
+- `rareza` (Común, Rara, Épica, Legendaria)
+
+**Relaciones:**
+- 1:1 con Pocion, Arma o Armadura (herencia)
+- N:M con Personaje (via Inventario)
 
 #### Subtipos (Herencia 1:1)
 
 **Pocion**
-- `id_objeto` (PK, FK)
-- `efecto`
+- `id_objeto` (PK, FK → Objeto)
+- `efecto` (Restaurar vida, aumentar maná, etc.)
 
 **Arma**
-- `id_objeto` (PK, FK)
-- `dano_base`
+- `id_objeto` (PK, FK → Objeto)
+- `dano_base` (daño base del arma)
 
 **Armadura**
-- `id_objeto` (PK, FK)
-- `valor_defensa`
-
-### ✨ Tabla: Habilidad
-- `id_habilidad` (PK)
-- `nombre_habilidad`
-- `descripcion_habilidad`
+- `id_objeto` (PK, FK → Objeto)
+- `valor_defensa` (puntos de defensa)
 
 ### 🏅 Tabla: Logro
 - `id_logro` (PK)
 - `nombre_logro`
 - `descripcion_logro`
 
+**Relaciones:**
+- N:M con Jugador (via Obtiene)
+
 ### 🏰 Tabla: Gremio
 - `id_gremio` (PK)
 - `nombre`
 - `fecha_fundacion`
 
-### 📘 Tabla: Partida
-- `id_partida` (PK)
-- `fecha_hora`
-- `duracion`
-- `resultado`
+**Relaciones:**
+- N:M con Jugador (via Pertenece)
 
 ---
 
 ## 🔗 6. Tablas Asociativas
 
 ### 🔹 Pertenece (Jugador ↔ Gremio)
-- `id_jugador` (FK)
-- `id_gremio` (FK)
-- `fecha_union`
-- **PK compuesto:** `(id_jugador, id_gremio)`
+- `id_jugador` (PK, FK → Jugador)
+- `id_gremio` (PK, FK → Gremio)
 
-### 🔹 Habilidad_Personaje (N:M)
-- `id_personaje` (FK)
-- `id_habilidad` (FK)
-- `nivel`
-- **PK:** `(id_personaje, id_habilidad)`
+**Restricción:** Un jugador solo puede pertenecer a un gremio a la vez.
 
 ### 🔹 Inventario (Personaje ↔ Objeto)
-- `id_personaje`
-- `id_objeto`
-- `cantidad`
-- **PK:** `(id_personaje, id_objeto)`
-
-### 🔹 Participa (Personaje ↔ Partida)
-- `id_personaje`
-- `id_partida`
-- `puntuacion`
-- **PK:** `(id_personaje, id_partida)`
+- `id_personaje` (PK, FK → Personaje)
+- `id_objeto` (PK, FK → Objeto)
+- `cantidad` (número de unidades del objeto)
 
 ### 🔹 Obtiene (Jugador ↔ Logro)
-- `id_jugador`
-- `id_logro`
-- `fecha_desbloqueo`
-- **PK:** `(id_jugador, id_logro)`
+- `id_jugador` (PK, FK → Jugador)
+- `id_logro` (PK, FK → Logro)
 
 ---
 
 ## 🛡️ 7. Seguridad Implementada
 
-El proyecto incluye medidas de seguridad esenciales para una aplicación real:
+El proyecto incluye medidas de seguridad esenciales para una aplicación en producción:
 
-### ✔ 1. Prevención de Inyección SQL
+### ✔ 1. Prevención de Inyección SQL con ORM
 
-Usamos consultas parametrizadas, nunca concatenación:
+Usamos SQLAlchemy ORM, que parametriza automáticamente todas las consultas:
 
 ```python
-cur.execute("""
-    SELECT id_jugador
-    FROM jugador
-    WHERE correo_electronico = %s
-    AND contrasena_hash = crypt(%s, contrasena_hash);
-""", (correo, contrasena))
+# ❌ NUNCA hagas esto (vulnerable)
+query = f"SELECT * FROM jugador WHERE correo = '{correo}'"
+
+# ✅ Usa ORM (seguro)
+jugador = Jugador.query.filter_by(correo_electronico=correo).first()
 ```
 
 - ✔ Variables separadas de la consulta
-- ✔ PostgreSQL protege automáticamente los parámetros
+- ✔ SQLAlchemy protege automáticamente los parámetros
+- ✔ No hay concatenación de strings en SQL
 
-### ✔ 2. Contraseñas Hasheadas
+### ✔ 2. Sistema de Contraseñas Híbrido
 
-Se usa Blowfish con:
+**Migración automática de contraseñas:**
 
-```sql
-crypt(%s, gen_salt('bf'))
+```python
+# Hash nuevo (Werkzeug)
+if jugador.contrasena_hash.startswith("pbkdf2:") or jugador.contrasena_hash.startswith("scrypt:"):
+    if check_password_hash(jugador.contrasena_hash, contrasena):
+        # Login exitoso
+        
+# Hash viejo (PostgreSQL crypt) - Migración automática
+else:
+    result = db.session.execute(
+        text("SELECT id_jugador FROM jugador WHERE id_jugador = :id AND contrasena_hash = crypt(:pass, contrasena_hash)"),
+        {"id": jugador.id_jugador, "pass": contrasena}
+    ).fetchone()
+    
+    if result:
+        # Rehashear con Werkzeug
+        jugador.contrasena_hash = generate_password_hash(contrasena)
+        db.session.commit()
 ```
 
-Las contraseñas nunca se guardan en texto plano.
+**Nuevos registros:**
+```python
+hash_password = generate_password_hash(contrasena)
+```
 
 ### ✔ 3. Sesiones seguras con secret key
 
 ```python
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 ```
 
-### ✔ 4. Validación de acceso
+- ✔ Cookies firmadas y encriptadas
+- ✔ Secret key almacenada en variables de entorno
 
-Cada ruta protegida verifica:
+### ✔ 4. Validación de acceso en cada ruta
+
+Cada ruta protegida verifica la sesión activa:
 
 ```python
 if 'id_jugador' not in session:
+    flash("Debes iniciar sesión primero.", "warning")
     return redirect(url_for('login'))
 ```
 
-### ✔ 5. Pool de conexiones
-
-Se usa para evitar fallas si Supabase se duerme:
+### ✔ 5. Pool de conexiones con auto-reconexión
 
 ```python
-psycopg2.pool.SimpleConnectionPool()
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,      # 🔥 detecta conexiones muertas
+    "pool_recycle": 280,        # 🔁 recicla conexiones cada 280s
+}
 ```
 
-### ✔ 6. Ping con Cron para evitar "base dormida"
+- ✔ Detecta conexiones muertas antes de usarlas
+- ✔ Recicla conexiones automáticamente
+- ✔ Evita errores por timeout de Supabase
 
-Cron-job.org llama a:
+### ✔ 6. Validación de pertenencia de recursos
 
+Antes de editar/eliminar, se valida que el recurso pertenezca al usuario:
+
+```python
+if personaje.id_jugador != session['id_jugador']:
+    return jsonify({"error": "Acción no permitida"}), 403
 ```
-https://tu-proyecto.onrender.com/ping
-```
-
-cada 5 minutos.
-
-Si la base está dormida, Flask la despierta automáticamente.
 
 ---
 
@@ -349,44 +380,82 @@ Si la base está dormida, Flask la despierta automáticamente.
 
 | Ruta | Método | Descripción |
 |------|--------|-------------|
-| `/login` | GET/POST | Iniciar sesión |
-| `/registro` | GET/POST | Registrar jugador |
-| `/logout` | GET | Cerrar sesión |
+| `/` | GET | Redirige a login |
+| `/login` | GET/POST | Iniciar sesión con migración de contraseñas |
+| `/registro` | GET/POST | Registrar nuevo jugador |
+| `/logout` | GET | Cerrar sesión y limpiar datos |
+
+### 🏠 Lobby y Dashboard
+
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/lobby` | GET | Panel principal con personaje y mascota activa |
 
 ### 🧙 Personajes
 
 | Ruta | Método | Descripción |
 |------|--------|-------------|
-| `/personajes` | GET/POST | Crear/editar |
-| `/eliminar_personaje/<id>` | DELETE | Eliminar |
-| `/seleccionar_personaje/<id>` | POST | Activar personaje |
+| `/personajes` | GET/POST | Listar, crear y editar personajes |
+| `/eliminar_personaje/<id>` | DELETE | Eliminar personaje (AJAX) |
+| `/seleccionar_personaje/<id>` | POST | Activar personaje seleccionado |
 
 ### 🐾 Mascotas
 
 | Ruta | Método | Descripción |
 |------|--------|-------------|
-| `/mascotas` | GET/POST | Crear/editar |
-| `/eliminar_mascota/<id>` | DELETE | Eliminar |
-| `/seleccionar_mascota/<id>` | POST | Activar mascota |
+| `/mascotas` | GET/POST | Listar, crear y editar mascotas |
+| `/eliminar_mascota/<id>` | DELETE | Eliminar mascota (AJAX) |
+| `/seleccionar_mascota/<id>` | POST | Activar mascota seleccionada |
+
+### 🎒 Inventario
+
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/inventario/pociones` | GET/POST | Gestionar pociones |
+| `/inventario/armas` | GET/POST | Gestionar armas |
+| `/inventario/armaduras` | GET/POST | Gestionar armaduras |
+
+**Acciones disponibles:**
+- ➕ Agregar objeto existente
+- 🆕 Crear nuevo objeto
+- ➕ Aumentar cantidad
+- ➖ Disminuir cantidad
+- 🗑️ Eliminar del inventario
+
+### 🏰 Gremios
+
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/gremio` | GET | Ver gremio actual o lista de gremios |
+| `/crear_gremio` | POST | Crear nuevo gremio |
+| `/unirse_gremio/<id>` | POST | Unirse a un gremio |
+| `/abandonar_gremio` | POST | Salir del gremio actual |
+
+### 🏅 Logros
+
+| Ruta | Método | Descripción |
+|------|--------|-------------|
+| `/logros` | GET | Ver logros desbloqueados y bloqueados |
 
 ### 🔧 API JSON
 
 | Ruta | Descripción |
 |------|-------------|
-| `/api/personaje/<id>` | Retorna personaje |
-| `/api/mascota/<id>` | Retorna mascota |
+| `/api/personaje/<id>` | Retorna datos del personaje en JSON |
+| `/api/mascota/<id>` | Retorna datos de la mascota en JSON |
 
-### 🛠 Mantenimiento
+### 🛠 Pruebas y Mantenimiento
 
 | Ruta | Descripción |
 |------|-------------|
-| `/ping` | Mantiene despierta la base |
+| `/test-db` | Verifica conexión con la base de datos |
+| `/test-jugador` | Prueba consulta ORM de jugador |
 
 ---
 
 ## 🧪 9. Cómo Ejecutar el Proyecto Localmente
 
-### 1️⃣ Clonar repo
+### 1️⃣ Clonar repositorio
 
 ```bash
 git clone https://github.com/usuario/proyecto-videojuego.git
@@ -396,9 +465,13 @@ cd proyecto-videojuego
 ### 2️⃣ Crear entorno virtual
 
 ```bash
+# Windows
 python -m venv venv
-venv\Scripts\activate       # Windows
-source venv/bin/activate    # Linux/Mac
+venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
 ```
 
 ### 3️⃣ Instalar dependencias
@@ -407,65 +480,142 @@ source venv/bin/activate    # Linux/Mac
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Crear archivo .env
+### 4️⃣ Crear archivo `.env`
 
-```
-DATABASE_URL=postgresql://...
-SECRET_KEY=clave-segura
+```env
+DATABASE_URL=postgresql://usuario:password@host:puerto/database
+SECRET_KEY=tu-clave-secreta-super-segura
 ```
 
-### 5️⃣ Ejecutar
+### 5️⃣ Configurar la base de datos
+
+Asegúrate de que las tablas estén creadas en PostgreSQL/Supabase. Puedes usar:
+
+```python
+from videojuego import db, app
+
+with app.app_context():
+    db.create_all()
+```
+
+### 6️⃣ Ejecutar la aplicación
 
 ```bash
-python app.py
+python videojuego.py
 ```
+
+La aplicación estará disponible en: `http://127.0.0.1:5000`
 
 ---
 
 ## 🌐 10. Despliegue en Render + Supabase
 
-### Supabase
-- ✔ Crear tablas
-- ✔ Añadir funciones `crypt()`
-- ✔ Habilitar conexiones externas
+### 📘 Configuración de Supabase
 
-### Render
-- ✔ Crear servicio web
-- ✔ Configurar variables de entorno
-- ✔ Comando de inicio:
+1. **Crear proyecto en Supabase**
+2. **Copiar la cadena de conexión:** Settings → Database → Connection String
+3. **Habilitar extensión pgcrypto** (para migración de contraseñas antiguas):
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS pgcrypto;
+   ```
+4. **Crear las tablas** usando el esquema del modelo relacional
 
-```bash
-gunicorn app:app
+### 🚀 Configuración de Render
+
+1. **Crear nuevo Web Service**
+2. **Conectar repositorio de GitHub**
+3. **Configurar variables de entorno:**
+   ```
+   DATABASE_URL=postgresql://...
+   SECRET_KEY=clave-super-segura
+   ```
+4. **Configurar Build Command:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. **Configurar Start Command:**
+   ```bash
+   gunicorn videojuego:app
+   ```
+
+### 📦 Agregar `gunicorn` a requirements.txt
+
+```txt
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+gunicorn==21.2.0
 ```
 
-### Cron-job.org
+### ✅ Verificar despliegue
 
-Llamar a:
-
+Una vez desplegado, accede a:
 ```
-https://tu-proyecto.onrender.com/ping
+https://tu-proyecto.onrender.com
 ```
-
-cada 5 minutos.
 
 ---
 
 ## 🎮 11. Funcionalidades Implementadas
 
-- ✔ Login seguro
-- ✔ Registro con hashing
-- ✔ Lobby dinámico
-- ✔ CRUD personajes
-- ✔ CRUD mascotas
-- ✔ APIs JSON
-- ✔ Sistema de sesiones
-- ✔ Seguridad anti SQL Injection
-- ✔ Pool de conexiones
-- ✔ Ping automático para DB
+### ✔ Sistema de Autenticación
+- Login seguro con migración automática de contraseñas
+- Registro con validación de correo único
+- Hash de contraseñas con Werkzeug (pbkdf2/scrypt)
+- Soporte para contraseñas antiguas con PostgreSQL crypt
+- Sesiones seguras con Flask
+
+### ✔ Gestión de Personajes
+- CRUD completo (Crear, Leer, Actualizar, Eliminar)
+- Selección de personaje activo
+- Visualización en lobby
+- API JSON para consultas
+
+### ✔ Gestión de Mascotas
+- CRUD completo vinculado al personaje activo
+- Selección de mascota activa
+- Validación de pertenencia
+- Tipos personalizables (Dragón, Lobo, Fénix, etc.)
+
+### ✔ Sistema de Inventario
+- Gestión multi-categoría (Pociones, Armas, Armaduras)
+- Agregar objetos existentes
+- Crear nuevos objetos con atributos especiales
+- Control de cantidades
+- Sistema de rareza (Común, Rara, Épica, Legendaria)
+
+### ✔ Sistema de Gremios
+- Crear nuevos gremios
+- Unirse a gremios existentes
+- Ver miembros del gremio
+- Abandonar gremio
+- Restricción: un jugador por gremio
+
+### ✔ Sistema de Logros
+- Visualización de logros desbloqueados
+- Estado de progreso
+- Sistema extensible para nuevas mecánicas
+
+### ✔ Arquitectura y Seguridad
+- SQLAlchemy ORM (prevención de SQL Injection)
+- Pool de conexiones con auto-reconexión
+- Validación de sesiones en todas las rutas protegidas
+- Validación de pertenencia de recursos
+- Manejo de errores con rollback automático
+- Flash messages para feedback al usuario
+
+### ✔ APIs REST
+- `/api/personaje/<id>` - Datos del personaje
+- `/api/mascota/<id>` - Datos de la mascota
+- Respuestas en formato JSON
 
 ---
 
 ## 🪪 12. Licencia
 
-Proyecto desarrollado con fines educativos.  
+Este proyecto está desarrollado con fines educativos.  
 Libre para estudiar, modificar y mejorar.
+---
+
+**¡Gracias por explorar este proyecto! 🎮⚔️🐉**
