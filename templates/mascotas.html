@@ -204,15 +204,31 @@
     <div class="lista">
       <h2>Mis Mascotas</h2>
       {% for m in mascotas %}
-      <div class="mascota-card" onclick="mostrarDetalle({{ m[0] }})">
-        <h3>{{ m[1] }}</h3>
-        <p><b>Tipo:</b> {{ m[2] }}</p>
-        <p><b>Nivel:</b> {{ m[3] }}</p>
-        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarMascota({{ m[0] }}, '{{ m[1] }}', '{{ m[2] }}')">✏️ Editar</button>
-        <button class="card-btn btn-eliminar" onclick="event.stopPropagation(); eliminarMascota({{ m[0] }})">🗑️ Eliminar</button>
-        <button class="card-btn btn-seleccionar" onclick="event.stopPropagation(); seleccionarMascota({{ m[0] }})">⭐ Seleccionar</button>
+      <div class="mascota-card" onclick="mostrarDetalle({{ m.id_mascota }})">
+        <h3>{{ m.nombre_mascota }}</h3>
+        <p><b>Tipo:</b> {{ m.tipo }}</p>
+        <p><b>Nivel:</b> {{ m.nivel }}</p>
+
+        <button class="card-btn btn-editar"
+          onclick="event.stopPropagation();
+                   editarMascota({{ m.id_mascota }},
+                           '{{ m.nombre_mascota }}',
+                           '{{ m.tipo }}')">
+          ✏️ Editar
+        </button>
+
+        <button class="card-btn btn-eliminar"
+          onclick="event.stopPropagation(); eliminarMascota({{ m.id_mascota }})">
+          🗑️ Eliminar
+        </button>
+
+        <button class="card-btn btn-seleccionar"
+          onclick="event.stopPropagation(); seleccionarMascota({{ m.id_mascota }})">
+          ⭐ Seleccionar
+        </button>
       </div>
       {% endfor %}
+
       <button class="btn-agregar" onclick="openModal()">+ Agregar Mascota</button>
     </div>
 

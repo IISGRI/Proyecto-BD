@@ -205,15 +205,33 @@
     <div class="lista">
       <h2>Mis Personajes</h2>
       {% for p in personajes %}
-      <div class="personaje-card" onclick="mostrarDetalle({{ p[0] }})">
-        <h3>{{ p[1] }}</h3>
-        <p><b>Clase:</b> {{ p[2] }}</p>
-        <p><b>Nivel:</b> {{ p[3] }}</p>
-        <button class="card-btn btn-editar" onclick="event.stopPropagation(); editarPersonaje({{ p[0] }}, '{{ p[1] }}', '{{ p[2] }}')">✏️ Editar</button>
-        <button class="card-btn btn-eliminar" onclick="event.stopPropagation(); eliminarPersonaje({{ p[0] }})">🗑️ Eliminar</button>
-        <button class="card-btn btn-seleccionar" onclick="event.stopPropagation(); seleccionarPersonaje({{ p[0] }})">⭐ Seleccionar</button>
-      </div>
-      {% endfor %}
+<div class="personaje-card" onclick="mostrarDetalle({{ p.id_personaje }})">
+  <h3>{{ p.nombre }}</h3>
+  <p><b>Clase:</b> {{ p.clase }}</p>
+  <p><b>Nivel:</b> {{ p.nivel }}</p>
+
+  <button class="card-btn btn-editar"
+    onclick="event.stopPropagation();
+             editarPersonaje({{ p.id_personaje }},
+                             '{{ p.nombre }}',
+                             '{{ p.clase }}')">
+    ✏️ Editar
+  </button>
+
+  <button class="card-btn btn-eliminar"
+    onclick="event.stopPropagation();
+             eliminarPersonaje({{ p.id_personaje }})">
+    🗑️ Eliminar
+  </button>
+
+  <button class="card-btn btn-seleccionar"
+    onclick="event.stopPropagation();
+             seleccionarPersonaje({{ p.id_personaje }})">
+    ⭐ Seleccionar
+  </button>
+</div>
+{% endfor %}
+
       <button class="btn-agregar" onclick="openModal()">+ Agregar Personaje</button>
     </div>
 

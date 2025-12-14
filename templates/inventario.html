@@ -6,229 +6,267 @@
 </head>
 <body>
 
+<!-- ================= FLASH ================= -->
 {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="flash-container">
-      {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
+{% if messages %}
+<div class="flash-container">
+  {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}
 {% endwith %}
 
-<h2>Inventario de {{ personaje.nombre }}</h2>
+<h2>{{ titulo }}</h2>
 
-<!-- ======== BOTÓN VOLVER A LOBBY ======== -->
 <button onclick="window.location.href='{{ url_for('lobby') }}'" class="btn-volver">
     ← Volver al Lobby
 </button>
 
-<!-- ======== BOTONES DE CATEGORÍA ======== -->
+<!-- ================= CATEGORÍAS ================= -->
 <div class="categoria-selector">
-    <a href="{{ url_for('inventario', tipo='pociones') }}" class="cat-btn {% if categoria=='pociones' %}activo{% endif %}">Pociones</a>
-    <a href="{{ url_for('inventario', tipo='armas') }}" class="cat-btn {% if categoria=='armas' %}activo{% endif %}">Armas</a>
-    <a href="{{ url_for('inventario', tipo='armaduras') }}" class="cat-btn {% if categoria=='armaduras' %}activo{% endif %}">Armaduras</a>
+    <a href="{{ url_for('inventario', tipo='pociones') }}"
+       class="cat-btn {% if tipo=='pociones' %}activo{% endif %}">Pociones</a>
+
+    <a href="{{ url_for('inventario', tipo='armas') }}"
+       class="cat-btn {% if tipo=='armas' %}activo{% endif %}">Armas</a>
+
+    <a href="{{ url_for('inventario', tipo='armaduras') }}"
+       class="cat-btn {% if tipo=='armaduras' %}activo{% endif %}">Armaduras</a>
 </div>
 
 <hr>
 
-<!-- ======== LISTA DE OBJETOS ======== -->
-<h3>Objetos en esta categoría</h3>
+<h3>Objetos</h3>
 
-{% if inventario %}
-<table border="1" class="tabla">
-    <tr>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Cantidad</th>
-        <th>Acciones</th>
-    </tr>
+{% if lista %}
+<table class="tabla">
+<tr>
+    <th>Nombre</th>
+    <th>Descripción</th>
+    <th>Cantidad</th>
+    <th>Acciones</th>
+</tr>
 
-    {% for obj in inventario %}
-    <tr>
-        <td>{{ obj.nombre }}</td>
-        <td>{{ obj.descripcion }}</td>
-        <td>{{ obj.cantidad }}</td>
-        <td>
-            <a class = "btn-eliminar" href="{{ url_for('inventario_eliminar', id_objeto=obj.id_objeto) }}">Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
-
+{% for obj in lista %}
+<tr>
+    <td>{{ obj.objeto.nombre }}</td>
+    <td>{{ obj.objeto.descripcion }}</td>
+    <td>{{ obj.cantidad }}</td>
+    <td>
+        <form method="POST" class="acciones-form">
+            <input type="hidden" name="id_objeto" value="{{ obj.id_objeto }}">
+            <button class="btn-sumar" name="accion" value="sumar">+</button>
+            <button class="btn-restar" name="accion" value="restar">−</button>
+            <button class="btn-eliminar" name="accion" value="eliminar">🗑</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
 </table>
 {% else %}
-<p>No hay objetos registrados en esta categoría.</p>
+<p class="sin-objetos">No hay objetos.</p>
 {% endif %}
 
 <hr>
 
-<!-- ======== FORMULARIO AGREGAR OBJETO EXISTENTE ======== -->
 <h3>Agregar objeto existente</h3>
+<form method="POST" class="form-box">
+  <input type="hidden" name="modo" value="existente">
 
-<form method="POST" action="{{ url_for('inventario_agregar_existente') }}">
-    <label>Objeto:</label>
-    <select name="id_objeto" required>
-        {% for obj in objetos_existentes %}
-            <option value="{{ obj.id_objeto }}">{{ obj.nombre }} ({{ obj.tipo }})</option>
-        {% endfor %}
-    </select>
+  <select name="id_objeto">
+    {% for o in objetos %}
+      <option value="{{ o.id_objeto }}">{{ o.nombre }}</option>
+    {% endfor %}
+  </select>
 
-    <label>Cantidad:</label>
-    <input type="number" name="cantidad" min="1" value="1" required>
-
-    <button type="submit">Agregar</button>
+  <input type="number" name="cantidad" value="1" min="1">
+  <button class="btn-principal">Agregar</button>
 </form>
 
 <hr>
 
-<!-- ======== FORMULARIO CREAR NUEVO OBJETO ======== -->
 <h3>Crear nuevo objeto</h3>
+<form method="POST" class="form-box">
+  <input type="hidden" name="modo" value="nuevo">
 
-<form method="POST" action="{{ url_for('inventario_crear') }}">
-    
-    <label>Nombre del objeto:</label>
-    <input type="text" name="nombre" required>
+  <input name="nombre" placeholder="Nombre" required>
+  <input name="descripcion" placeholder="Descripción" required>
+  <input type="number" name="valor" value="0">
 
-    <label>Descripción:</label>
-    <input type="text" name="descripcion" required>
+  <select name="rareza">
+    <option>Común</option>
+    <option>Poco común</option>
+    <option>Raro</option>
+    <option>Épico</option>
+    <option>Legendario</option>
+  </select>
 
-    <label>Valor:</label>
-    <input type="number" name="valor" min="0" value="0">
+  <select name="tipo">
+    <option value="pocion">Poción</option>
+    <option value="arma">Arma</option>
+    <option value="armadura">Armadura</option>
+  </select>
 
-    <label>Rareza:</label>
-    <select name="rareza">
-        <option>Común</option>
-        <option>Poco común</option>
-        <option>Raro</option>
-        <option>Épico</option>
-        <option>Legendario</option>
-    </select>
-
-    <label>Tipo:</label>
-    <select name="tipo" required>
-        <option value="pocion">Poción</option>
-        <option value="arma">Arma</option>
-        <option value="armadura">Armadura</option>
-    </select>
-
-    <!-- Campo especial según el tipo -->
-    <label>Efecto (para pociones) / Daño (arma) / Defensa (armadura):</label>
-    <input type="text" name="extra" required>
-
-    <button type="submit">Crear objeto</button>
+  <input name="extra" placeholder="Efecto / Daño / Defensa" required>
+  <button class="btn-principal">Crear</button>
 </form>
 
-
-<!-- ======== CSS ======== -->
+<!-- ================= CSS ================= -->
 <style>
-    body {
-        font-family: Arial;
-        background: #202020;
-        color: white;
-        padding: 20px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    background: #202020;
+    color: white;
+    padding: 20px;
+}
 
-    h2, h3 { color: #00bfff; }
+h2, h3 {
+    color: #00bfff;
+    text-align: center;
+}
 
-    .categoria-selector {
-        margin-bottom: 15px;
-    }
+/* ================= CONTENEDORES ================= */
+.categoria-selector {
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-    .cat-btn {
-        padding: 10px 15px;
-        background: #333;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-        margin-right: 10px;
-    }
+hr {
+    margin: 30px auto;
+    border: 1px solid #444;
+    width: 80%;
+}
 
-    .cat-btn.activo {
-        background: #00bfff;
-        font-weight: bold;
-    }
+/* ================= BOTONES ================= */
+.cat-btn {
+    padding: 10px 18px;
+    background: #333;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 5px;
+    display: inline-block;
+}
 
-    .tabla {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-        background: #2b2b2b;
-    }
+.cat-btn.activo {
+    background: #00bfff;
+    font-weight: bold;
+}
 
-    .tabla th, .tabla td {
-        padding: 10px;
-        border: 1px solid #444;
-    }
+.btn-volver {
+    background: #ff5555;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    margin: 0 auto 25px;
+    display: block;
+}
 
-    .btn-volver {
-        background: #ff5555;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        color: white;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-    .btn-volver:hover {
-        background: #ff7777;
-    }
-    .btn-eliminar{
-        color: #ff7777;
-        text-decoration: none;
-    }
-    form {
-        background: #292929;
-        padding: 15px;
-        border-radius: 8px;
-        width: 60%;
-    }
+.btn-volver:hover {
+    background: #ff7777;
+}
 
-    input, select {
-        width: 100%;
-        padding: 7px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border: none;
-        background-color: #444;
-        color: rgb(255, 255, 255);
-    }
+/* ================= TABLA ================= */
+.tabla {
+    width: 90%;
+    margin: auto;
+    border-collapse: collapse;
+    background: #2b2b2b;
+}
 
-    button {
-        padding: 10px 15px;
-        background: #00bfff;
-        border: none;
-        color: black;
-        cursor: pointer;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-    button:hover {
-        background: #33ccff;
-    }
-    .flash-container {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
-      text-align: center;
-    }
+.tabla th, .tabla td {
+    padding: 10px;
+    border: 1px solid #444;
+    text-align: center;
+}
 
-    .flash {
-      padding: 10px 20px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      color: white;
-      font-weight: bold;
-      display: inline-block;
-    }
+/* ================= FORMULARIOS ================= */
+.form-box {
+    background: #292929;
+    padding: 20px;
+    border-radius: 10px;
+    width: 60%;
+    margin: 20px auto;
+}
 
-    .flash.success { background-color: #28a745; }
-    .flash.error { background-color: #dc3545; }
-    .flash.warning { background-color: #ffc107; color: #222; }
-    .flash.info { background-color: #17a2b8; }
-    
+.form-box input,
+.form-box select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #444;
+    color: white;
+}
+
+/* ================= ACCIONES ================= */
+.acciones-form {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-sumar {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-restar {
+    background-color: #ffc107;
+}
+
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-principal {
+    padding: 10px;
+    background: #00bfff;
+    border: none;
+    color: black;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.btn-principal:hover {
+    background: #33ccff;
+}
+
+/* ================= OTROS ================= */
+.sin-objetos {
+    text-align: center;
+    color: #ccc;
+}
+
+/* ================= FLASH ================= */
+.flash-container {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    text-align: center;
+}
+
+.flash {
+    padding: 12px 25px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+.flash.success { background-color: #28a745; }
+.flash.error { background-color: #dc3545; }
+.flash.warning { background-color: #ffc107; color: #222; }
+.flash.info { background-color: #17a2b8; }
 </style>
 
 </body>
