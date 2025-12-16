@@ -611,7 +611,293 @@ https://tu-proyecto.onrender.com
 - Respuestas en formato JSON
 
 ---
+# 🐳 12. Contenerización con Docker
 
+El proyecto fue dockerizado para garantizar **portabilidad, consistencia entre entornos y facilidad de despliegue en producción**.
+
+La aplicación se ejecuta dentro de un contenedor Docker que incluye:
+
+- ✔ Entorno Python aislado
+- ✔ Instalación automática de dependencias
+- ✔ Servidor de producción Gunicorn
+- ✔ Configuración mediante variables de entorno
+
+---
+
+## 📦 Dockerfile
+
+El contenedor utiliza una imagen ligera de Python y ejecuta la aplicación con Gunicorn:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "videojuego:app"]
+```
+
+### 🔍 Explicación del Dockerfile
+
+| Línea | Descripción |
+|-------|-------------|
+| `FROM python:3.11-slim` | Imagen base ligera de Python 3.11 |
+| `WORKDIR /app` | Establece `/app` como directorio de trabajo |
+| `ENV PYTHONDONTWRITEBYTECODE=1` | Evita crear archivos `.pyc` (optimización) |
+| `ENV PYTHONUNBUFFERED=1` | Logs en tiempo real sin buffering |
+| `COPY requirements.txt .` | Copia el archivo de dependencias |
+| `RUN pip install --no-cache-dir -r requirements.txt` | Instala dependencias sin cache |
+| `COPY . .` | Copia todo el código de la aplicación |
+| `CMD ["gunicorn", "-b", "0.0.0.0:5000", "videojuego:app"]` | Ejecuta Gunicorn en puerto 5000 |
+
+---
+
+## 🧩 docker-compose.yml (entorno local)
+
+Para desarrollo local se utiliza **Docker Compose**, permitiendo levantar el proyecto con un solo comando:
+
+```yaml
+services:
+  web:
+    build: .
+    container_name: videojuego_flask
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+```
+
+### 🔍 Explicación del docker-compose.yml
+
+| Parámetro | Descripción |
+|-----------|-------------|
+| `build: .` | Construye la imagen desde el Dockerfile local |
+| `container_name: videojuego_flask` | Nombre del contenedor |
+| `ports: "5000:5000"` | Mapea el puerto 5000 del contenedor al host |
+| `env_file: .env` | Carga variables de entorno desde `.env` |
+| `volumes: .:/app` | Sincroniza cambios del código en tiempo real |
+
+---
+
+## ▶️ Ejecución local con Docker
+
+### 1️⃣ Construir la imagen
+
+```bash
+docker compose build
+```
+
+### 2️⃣ Levantar el contenedor
+
+```bash
+docker compose up
+```
+
+### 3️⃣ Acceder a la aplicación
+
+La aplicación queda disponible en:
+
+```
+http://localhost:5000
+```
+
+### 🛑 Detener el contenedor
+
+```bash
+docker compose down
+```
+
+---
+
+## 🎯 Ventajas de Docker en este proyecto
+
+| Ventaja | Descripción |
+|---------|-------------|
+| ✔ **Portabilidad** | Funciona igual en Windows, Mac y Linux |
+| ✔ **Consistencia** | Mismo entorno en desarrollo y producción |
+| ✔ **Aislamiento** | No interfiere con otras instalaciones de Python |
+| ✔ **Despliegue rápido** | Se despliega en segundos en cualquier servidor |
+| ✔ **Escalabilidad** | Fácil de replicar en múltiples instancias |
+
+---
+
+# 🌐 12. Despliegue en Producción (Render + Supabase)
+
+El sistema fue desplegado exitosamente en la nube utilizando **Render**, conectándose a una base de datos PostgreSQL alojada en **Supabase**.
+
+---
+
+## 🚀 Flujo de despliegue
+
+```mermaid
+graph LR
+    A[GitHub Repository] --> B[Render detecta Dockerfile]
+    B --> C[Build automático]
+    C --> D[Deploy con Gunicorn]
+    D --> E[Conexión a Supabase]
+    E --> F[Aplicación en producción]
+```
+
+### Pasos del despliegue:
+
+1. **El código fuente se aloja en GitHub**
+2. **Render detecta automáticamente el `Dockerfile`**
+3. **Cada `git push` ejecuta un nuevo despliegue (CI/CD)**
+4. **Las variables sensibles se configuran en Render**
+5. **Supabase actúa como base de datos externa segura**
+
+---
+
+## 🔐 Variables de entorno en producción
+
+Configuradas directamente en el panel de Render:
+
+```env
+DATABASE_URL=postgresql://user:password@host:port/database
+SECRET_KEY=clave-super-segura-generada-aleatoriamente
+```
+
+⚠️ **Importante:** El archivo `.env` **NO se sube al repositorio** por motivos de seguridad (incluido en `.gitignore`).
+
+---
+
+## 🏗️ Configuración en Render
+
+### 1️⃣ Crear nuevo Web Service
+
+1. Inicia sesión en [Render](https://render.com)
+2. Haz clic en **"New +"** → **"Web Service"**
+3. Conecta tu repositorio de GitHub
+
+### 2️⃣ Configurar el servicio
+
+| Campo | Valor |
+|-------|-------|
+| **Name** | `videojuego-medieval` |
+| **Region** | Selecciona la más cercana |
+| **Branch** | `main` |
+| **Root Directory** | (dejar vacío) |
+| **Runtime** | `Docker` |
+| **Build Command** | (automático) |
+| **Start Command** | (automático desde Dockerfile) |
+
+### 3️⃣ Agregar variables de entorno
+
+En la sección **"Environment"** agrega:
+
+```
+DATABASE_URL = postgresql://...
+SECRET_KEY = tu-clave-secreta
+```
+
+### 4️⃣ Deploy
+
+Haz clic en **"Create Web Service"** y espera el despliegue automático.
+
+---
+
+## 📊 Arquitectura en producción
+
+```
+┌─────────────┐
+│   Usuario   │
+└──────┬──────┘
+       │ HTTPS
+       ↓
+┌─────────────────┐
+│  Render (Web)   │
+│   Flask App     │
+│   + Gunicorn    │
+└────────┬────────┘
+         │ PostgreSQL
+         ↓
+┌─────────────────┐
+│    Supabase     │
+│   PostgreSQL    │
+│  (Base de datos)│
+└─────────────────┘
+```
+
+---
+
+## 🌍 Acceso a la aplicación
+
+Una vez desplegado, el sistema es accesible desde una **URL pública proporcionada por Render**, permitiendo su uso en un entorno real de producción.
+
+Ejemplo de URL:
+```
+https://videojuego-medieval.onrender.com
+```
+
+---
+
+## 🔄 CI/CD Automático
+
+Render ofrece **integración continua** sin configuración adicional:
+
+- ✔ Cada `git push` a la rama principal desencadena un nuevo build
+- ✔ Se construye la imagen Docker automáticamente
+- ✔ Se despliega la nueva versión sin downtime
+- ✔ Rollback automático si falla el despliegue
+
+---
+
+## 📈 Monitoreo y Logs
+
+Render proporciona herramientas de monitoreo integradas:
+
+- **Logs en tiempo real** desde el dashboard
+- **Métricas de CPU y memoria**
+- **Alertas de disponibilidad**
+- **Historial de despliegues**
+
+Acceso a logs:
+```bash
+# Desde el dashboard de Render
+Logs → Ver logs en tiempo real
+```
+
+---
+
+## 🛡️ Seguridad en producción
+
+| Medida | Implementación |
+|--------|----------------|
+| ✔ **HTTPS** | Certificado SSL gratuito por defecto |
+| ✔ **Variables de entorno** | Almacenadas de forma segura en Render |
+| ✔ **Conexión a BD** | Cifrada con SSL/TLS (Supabase) |
+| ✔ **Firewall** | Solo puertos necesarios expuestos |
+| ✔ **Hashing de contraseñas** | Werkzeug + migración automática |
+| ✔ **Prevención SQL Injection** | SQLAlchemy ORM |
+
+---
+
+## 🚦 Estado del servicio
+
+Puedes verificar el estado del servicio en:
+
+```
+https://videojuegobd.onrender.com/test-db
+```
+
+Respuesta esperada:
+```json
+{
+  "status": "ok",
+  "database": "connected"
+}
+```
+
+---
 ## 🪪 12. Licencia
 
 Este proyecto está desarrollado con fines educativos.  
