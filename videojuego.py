@@ -17,12 +17,8 @@ app = Flask(__name__)
 # Clave para manejar sesiones seguras (cookies firmadas)
 app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
 
-#Inicializa SQLAlchemy usando tu config.py
 from config import Config
 app.config.from_object(Config)
-
-from sqlalchemy import create_engine
-from sqlalchemy.pool import QueuePool
 
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,     # 🔥 detecta conexiones muertas
@@ -1006,5 +1002,4 @@ def test_jugador():
 # MARK: EJECUCIÓN PRINCIPAL DE FLASK
 # ==========================================
 if __name__ == '__main__':
-    # debug=True permite autorecargar y ver errores detallados (solo en desarrollo)
-    app.run(debug=True)
+    app.run()

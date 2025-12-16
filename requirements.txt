@@ -3,4 +3,4 @@ Flask-SQLAlchemy
 python-dotenv
 gunicorn
 psycopg2-binary
-Werkzeug
+Werkzeug==3.0.1
