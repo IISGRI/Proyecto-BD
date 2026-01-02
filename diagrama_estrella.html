@@ -1,0 +1,271 @@
+import React from 'react';
+import { Database, Users, User, Calendar, Trophy } from 'lucide-react';
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquema Estrella</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            padding: 40px 20px;
+        }
+        .container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 60px; 
+        }
+        .header h1 { 
+            font-size: 48px; 
+            color: #1a202c; 
+            margin-bottom: 15px; 
+        }
+        .header p { 
+            font-size: 20px; 
+            color: #4a5568; 
+            margin-bottom: 20px; 
+        }
+        .info-box {
+            display: inline-block;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px solid #cbd5e0;
+        }
+        .diagram-container { 
+            position: relative; 
+            width: 100%; 
+            height: 1400px; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 4px solid #a0aec0;
+            margin-bottom: 60px;
+        }
+        .dimension-box {
+            position: absolute;
+            width: 190px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 2px solid #cbd5e0;
+            overflow: hidden;
+        }
+        .dimension-header {
+            padding: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dimension-body {
+            padding: 10px;
+            background: #f7fafc;
+        }
+        .dimension-field {
+            font-size: 10px;
+            padding: 3px 0;
+            color: #4a5568;
+        }
+        .dimension-field.pk {
+            font-weight: bold;
+            color: #1a202c;
+        }
+        .fact-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 210px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border: 4px solid #e53e3e;
+            overflow: hidden;
+        }
+        .fact-header {
+            background: #e53e3e;
+            padding: 14px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .fact-body {
+            padding: 12px;
+            background: #fffbeb;
+        }
+        .fact-field {
+            font-size: 11px;
+            padding: 2px 0;
+        }
+        .fact-field.key {
+            font-weight: bold;
+            color: #1a202c;
+        }
+        .fact-field.measure {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .fact-field.separator {
+            text-align: center;
+            color: #cbd5e0;
+        }
+        svg { pointer-events: none; }
+        .footer-boxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+        .footer-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .footer-box h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1a202c;
+        }
+        .footer-box p {
+            font-size: 15px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Esquema Estrella (Star Schema)</h1>
+            <p>Data Warehouse - Sistema de Videojuego</p>
+            <div class="info-box">
+                <p style="font-size: 15px; color: #4a5568;">
+                    <span style="color: #e53e3e; font-weight: bold;">Tabla de Hechos</span> al centro | 
+                    <span style="color: #3b82f6; font-weight: bold;">Dimensiones</span> alrededor
+                </p>
+            </div>
+        </div>
+
+        <div class="diagram-container">
+            <svg style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                <line x1="50%" y1="50%" x2="50%" y2="12%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5" />
+                <line x1="50%" y1="50%" x2="88%" y2="50%" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,5" />
+                <line x1="50%" y1="50%" x2="50%" y2="88%" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5" />
+                <line x1="50%" y1="50%" x2="12%" y2="50%" stroke="#f97316" stroke-width="2" stroke-dasharray="5,5" />
+            </svg>
+
+            <!-- DIM_JUGADOR -->
+            <div class="dimension-box" style="top: 5%; left: 50%; transform: translateX(-50%);">
+                <div class="dimension-header" style="background: #3b82f6;">
+                    <span style="font-size: 16px;">👤</span>
+                    <span>DIM_JUGADOR</span>
+                </div>
+                <div class="dimension-body">
+                    <div class="dimension-field pk">id_jugador (PK)</div>
+                    <div class="dimension-field">nombre_usuario</div>
+                    <div class="dimension-field">correo</div>
+                    <div class="dimension-field">fecha_registro</div>
+                    <div class="dimension-field">pais</div>
+                </div>
+            </div>
+
+            <!-- DIM_PERSONAJE -->
+            <div class="dimension-box" style="top: 50%; right: 5%; transform: translateY(-50%);">
+                <div class="dimension-header" style="background: #a855f7;">
+                    <span style="font-size: 16px;">🧙</span>
+                    <span>DIM_PERSONAJE</span>
+                </div>
+                <div class="dimension-body">
+                    <div class="dimension-field pk">id_personaje (PK)</div>
+                    <div class="dimension-field">clase</div>
+                    <div class="dimension-field">nivel_inicial</div>
+                    <div class="dimension-field">raza</div>
+                </div>
+            </div>
+
+            <!-- DIM_TIEMPO -->
+            <div class="dimension-box" style="bottom: 5%; left: 50%; transform: translateX(-50%);">
+                <div class="dimension-header" style="background: #22c55e;">
+                    <span style="font-size: 16px;">📅</span>
+                    <span>DIM_TIEMPO</span>
+                </div>
+                <div class="dimension-body">
+                    <div class="dimension-field pk">id_tiempo (PK)</div>
+                    <div class="dimension-field">fecha</div>
+                    <div class="dimension-field">dia</div>
+                    <div class="dimension-field">mes</div>
+                    <div class="dimension-field">año</div>
+                    <div class="dimension-field">trimestre</div>
+                </div>
+            </div>
+
+            <!-- DIM_EVENTO -->
+            <div class="dimension-box" style="top: 50%; left: 5%; transform: translateY(-50%);">
+                <div class="dimension-header" style="background: #f97316;">
+                    <span style="font-size: 16px;">🏆</span>
+                    <span>DIM_EVENTO</span>
+                </div>
+                <div class="dimension-body">
+                    <div class="dimension-field pk">id_evento (PK)</div>
+                    <div class="dimension-field">tipo_evento</div>
+                    <div class="dimension-field">descripcion</div>
+                    <div class="dimension-field">dificultad</div>
+                </div>
+            </div>
+
+            <!-- FACT_PROGRESO -->
+            <div class="fact-box">
+                <div class="fact-header">
+                    <span style="font-size: 20px;">💾</span>
+                    <span>FACT_PROGRESO</span>
+                </div>
+                <div class="fact-body">
+                    <div class="fact-field key">id_progreso (PK)</div>
+                    <div class="fact-field key">id_jugador (FK)</div>
+                    <div class="fact-field key">id_personaje (FK)</div>
+                    <div class="fact-field key">id_tiempo (FK)</div>
+                    <div class="fact-field key">id_evento (FK)</div>
+                    <div class="fact-field separator">───────────</div>
+                    <div class="fact-field measure">xp_ganada</div>
+                    <div class="fact-field measure">oro_ganado</div>
+                    <div class="fact-field measure">nivel_resultante</div>
+                    <div class="fact-field measure">duracion_evento</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-boxes">
+            <div class="footer-box" style="border-left: 4px solid #e53e3e;">
+                <h3>Tabla de Hechos</h3>
+                <p>Contiene las métricas cuantitativas y las claves foráneas hacia las dimensiones.</p>
+            </div>
+            
+            <div class="footer-box" style="border-left: 4px solid #3b82f6;">
+                <h3>Dimensiones</h3>
+                <p>Proporcionan el contexto descriptivo para analizar los hechos desde múltiples perspectivas.</p>
+            </div>
+            
+            <div class="footer-box" style="border-left: 4px solid #22c55e;">
+                <h3>Relaciones 1:N</h3>
+                <p>Cada dimensión se relaciona con múltiples registros en la tabla de hechos.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
