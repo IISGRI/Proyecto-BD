@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Cubo de Datos - Videojuego</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icons/iconoSF.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: #f5f5f5;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    header {
+      background-color: #111;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.6em;
+      font-weight: bold;
+    }
+
+    main {
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-top: 50px;
+      color: #4fc3f7;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #444;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #2c3e50;
+    }
+
+    tr:nth-child(even) {
+      background-color: #2a2a2a;
+    }
+
+    .info {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #ccc;
+    }
+
+    .btn-volver {
+      display: inline-block;
+      margin: 40px 0;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .btn-volver:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  📊 Cubo de Datos – Progreso del Videojuego
+</header>
+
+<main>
+
+<!-- ================= ROLL-UP ================= -->
+<h2>ROLL-UP — XP por Año y Mes</h2>
+<table>
+  <tr><th>Año</th><th>Mes</th><th>XP Total</th></tr>
+  {% for f in rollup %}
+  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td><td>{{ f[2] }}</td></tr>
+  {% endfor %}
+</table>
+<div class="info">Jerarquía: Año → Mes</div>
+
+<!-- ================= SLICE ================= -->
+<h2>SLICE — XP por Mes (Año 2025)</h2>
+<table>
+  <tr><th>Mes</th><th>XP Total</th></tr>
+  {% for f in slice %}
+  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td></tr>
+  {% endfor %}
+</table>
+<div class="info">Filtro: Año = 2025</div>
+
+<!-- ================= DICE ================= -->
+<h2>DICE — XP por Clase (Año 2025)</h2>
+<table>
+  <tr><th>Clase</th><th>Año</th><th>XP Total</th></tr>
+  {% for f in dice %}
+  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td><td>{{ f[2] }}</td></tr>
+  {% endfor %}
+</table>
+<div class="info">Dimensiones: Clase + Tiempo</div>
+
+<!-- ================= DRILL-DOWN ================= -->
+<h2>DRILL-DOWN — XP por Día (Mayo 2025)</h2>
+<table>
+  <tr><th>Fecha</th><th>XP Total</th></tr>
+  {% for f in drilldown %}
+  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td></tr>
+  {% endfor %}
+</table>
+<div class="info">Detalle: Mes → Día</div>
+
+<a href="{{ url_for('lobby') }}" class="btn-volver">⬅ Volver al Lobby</a>
+
+</main>
+</body>
+</html>

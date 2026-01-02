@@ -980,6 +980,84 @@ def crear_gremio():
         print(e)
 
     return redirect(url_for('gremio'))
+# ==========================================
+# MARK: CUBO DE DATOS / OLAP
+# ==========================================
+@app.route('/cubo')
+def cubo():
+    if 'id_jugador' not in session:
+        flash("Debes iniciar sesión para ver el cubo de datos", "warning")
+        return redirect(url_for('login'))
+
+    try:
+        # ============================
+        # 🔹 ROLL-UP: XP por Año y Mes
+        # ============================
+        rollup = db.session.execute(text("""
+            SELECT
+                t.anio,
+                t.mes,
+                SUM(f.xp_ganada) AS xp_total
+            FROM dw.fact_progreso f
+            JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+            GROUP BY t.anio, t.mes
+            ORDER BY t.anio, t.mes;
+        """)).fetchall()
+
+        # ============================
+        # 🔹 SLICE: XP por Mes (Año fijo)
+        # ============================
+        slice_ = db.session.execute(text("""
+            SELECT
+                t.mes,
+                SUM(f.xp_ganada) AS xp_total
+            FROM dw.fact_progreso f
+            JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+            WHERE t.anio = 2025
+            GROUP BY t.mes
+            ORDER BY t.mes;
+        """)).fetchall()
+
+        # ============================
+        # 🔹 DICE: XP por Clase y Año
+        # ============================
+        dice = db.session.execute(text("""
+            SELECT
+                p.clase,
+                t.anio,
+                SUM(f.xp_ganada) AS xp_total
+            FROM dw.fact_progreso f
+            JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
+            JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+            WHERE t.anio = 2025
+            GROUP BY p.clase, t.anio
+            ORDER BY p.clase;
+        """)).fetchall()
+
+        # ============================
+        # 🔹 DRILL-DOWN: XP por Día
+        # ============================
+        drilldown = db.session.execute(text("""
+            SELECT
+                t.fecha,
+                SUM(f.xp_ganada) AS xp_total
+            FROM dw.fact_progreso f
+            JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+            WHERE t.anio = 2025 AND t.mes = 5
+            GROUP BY t.fecha
+            ORDER BY t.fecha;
+        """)).fetchall()
+
+        return render_template(
+            "cubo.html",
+            rollup=rollup,
+            slice=slice_,
+            dice=dice,
+            drilldown=drilldown
+        )
+
+    except Exception as e:
+        return f"❌ Error al consultar el cubo: {e}"
 
 #MARK: PRUEBAS
 @app.route('/test-db')
