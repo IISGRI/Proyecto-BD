@@ -91,7 +91,7 @@ COMMENT ON TABLE dw.fact_progreso IS
 'Tabla de hechos que almacena el progreso del jugador por evento y tiempo';
 
 -- =========================================
--- ÍNDICES RECOMENDADOS (OPCIONAL)
+-- ÍNDICES RECOMENDADOS
 -- =========================================
 CREATE INDEX idx_fact_jugador ON dw.fact_progreso(id_jugador_sk);
 CREATE INDEX idx_fact_personaje ON dw.fact_progreso(id_personaje_sk);

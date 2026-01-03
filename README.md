@@ -1,468 +1,648 @@
-# 🎮 Sistema de Gestión para Videojuego Medieval — Flask + PostgreSQL + Supabase
+# 🎮 Sistema de Gestión para Videojuego Medieval
+## Flask + PostgreSQL + Supabase + Data Warehouse + Cubo OLAP
 
-Este proyecto es una aplicación web completa para gestionar jugadores, personajes, mascotas, inventarios, gremios, logros y elementos esenciales de un videojuego con temática medieval.
+Este proyecto es una **aplicación web completa** que integra la gestión operativa y analítica de un videojuego con temática medieval.
 
-Incluye autenticación segura, panel de lobby dinámico, CRUDs completos, APIs JSON, arquitectura modular con SQLAlchemy ORM, protección contra inyección SQL y migración automática de contraseñas.
+**Componentes principales:**
+- 🧱 **Sistema Transaccional (OLTP)** - Gestión del videojuego en tiempo real
+- 📊 **Data Warehouse (OLAP)** - Análisis histórico y estratégico
+- 🧊 **Cubo de Datos** - Operaciones analíticas multidimensionales
+- 🌐 **Interfaz Web Integrada** - Visualización analítica desde el juego
+
+---
+
+## 📑 Tabla de Contenidos
+
+1. [Problemática](#-1-problemática)
+2. [Objetivo del Proyecto](#-2-objetivo-del-proyecto)
+3. [Arquitectura del Sistema](#-3-arquitectura-del-sistema)
+4. [Tecnologías Utilizadas](#-4-tecnologías-utilizadas)
+5. [Estructura del Proyecto](#-5-estructura-del-proyecto)
+6. [Modelo Relacional OLTP](#-6-modelo-relacional-oltp)
+7. [Data Warehouse - Modelo Dimensional](#-7-data-warehouse---modelo-dimensional)
+8. [Cubo de Datos OLAP](#-8-cubo-de-datos-olap)
+9. [Proceso ETL](#-9-proceso-etl)
+10. [Instalación y Ejecución](#-10-instalación-y-ejecución)
+11. [Despliegue en Producción](#-11-despliegue-en-producción)
+12. [Funcionalidades Implementadas](#-12-funcionalidades-implementadas)
+13. [Metodología de Desarrollo](#-13-metodología-de-desarrollo)
+14. [Licencia](#-14-licencia)
 
 ---
 
 ## 🛑 1. Problemática
 
-Un estudio de videojuegos enfrentaba un problema serio: sus datos estaban desorganizados. No existía un sistema que:
+Un estudio de videojuegos enfrentaba dos grandes desafíos:
 
-- Gestionara jugadores de forma segura
-- Permitiera crear/editar personajes y mascotas
-- Manejara inventarios con diferentes tipos de objetos
-- Administrara gremios y membresías
-- Mostrara logros y progreso de jugadores
-- Permitiera generar reportes de rendimiento
-
-Esto producía:
-
-- ❌ Pérdida de datos
+### 🔹 Problema Operacional (OLTP)
+- ❌ Datos desorganizados y sin control
 - ❌ Errores en estadísticas del juego
-- ❌ Problemas al gestionar eventos
-- ❌ Fallas al iniciar sesión o consultar información
-- ❌ Información inconsistente entre jugadores y personajes
+- ❌ Falta de seguridad en autenticación
+- ❌ Dificultad para gestionar personajes, inventarios y eventos
+- ❌ Información inconsistente entre entidades
 
-Era necesario crear un sistema centralizado, seguro y escalable.
+### 🔹 Problema Analítico (OLAP)
+- ❌ No existían reportes históricos
+- ❌ Imposibilidad de analizar el progreso temporal
+- ❌ No se podía medir rendimiento por clase, evento o periodo
+- ❌ Sin capacidad de análisis estratégico del juego
+- ❌ Falta de herramientas para toma de decisiones
 
 ---
 
 ## 🎯 2. Objetivo del Proyecto
 
-Desarrollar una plataforma web robusta que permita:
+Desarrollar una **plataforma integral** que permita:
 
-- ✔ Registro e inicio de sesión seguro con migración automática de contraseñas
-- ✔ Manejo de contraseñas encriptadas (Werkzeug + PostgreSQL crypt)
-- ✔ CRUD completo de personajes
-- ✔ CRUD completo de mascotas
-- ✔ Sistema de inventario multi-categoría (pociones, armas, armaduras)
-- ✔ Gestión de gremios (crear, unirse, abandonar)
-- ✔ Sistema de logros desbloqueables
-- ✔ Selección de personaje y mascota activa
-- ✔ Lobby dinámico con datos del jugador en tiempo real
-- ✔ API REST para integraciones futuras del juego
-- ✔ Seguridad contra SQL Injection mediante ORM
-- ✔ Conexión optimizada con pool y auto-reconexión
+### ✔ Operación del Videojuego (OLTP)
+- Registro e inicio de sesión seguro con encriptación
+- CRUD completo de personajes y mascotas
+- Sistema de inventario multi-categoría (pociones, armas, armaduras)
+- Gestión de gremios (crear, unirse, abandonar)
+- Sistema de logros desbloqueables
+- Lobby dinámico con personaje y mascota activa
+- API REST para integraciones futuras
 
----
-
-## 🧱 3. Tecnologías Utilizadas
-
-### 🔹 Flask (Backend Web)
-Framework ligero y rápido. Maneja autenticación, rutas, sesiones y lógica de negocio. Perfecto para aplicaciones web con estructura modular.
-
-### 🔹 SQLAlchemy ORM
-Mapeo objeto-relacional que protege contra SQL Injection y simplifica las consultas a la base de datos. Proporciona relaciones automáticas entre modelos.
-
-### 🔹 Flask-SQLAlchemy
-Integración de SQLAlchemy con Flask, facilitando la configuración y uso del ORM.
-
-### 🔹 Werkzeug Security
-Sistema de hashing de contraseñas moderno (pbkdf2/scrypt) con migración automática desde PostgreSQL crypt.
-
-### 🔹 Jinja2 (Motor de Plantillas)
-Permite mezclar HTML con variables de Python, renderizando dinámicamente la interfaz del juego.
-
-### 🔹 PostgreSQL
-Base de datos relacional robusta, ideal para modelos con múltiples entidades relacionadas y consultas complejas.
-
-### 🔹 Supabase
-Hosting de PostgreSQL con funciones avanzadas de seguridad: `crypt()`, `gen_salt()`, hashing tipo Blowfish, etc.
-
-### 🔹 Render.com
-Alojamiento del backend Flask con despliegue automático desde GitHub y variables de entorno seguras.
-
-### 🔹 Bootstrap + CSS personalizado
-Utilizado para el diseño visual responsivo de todas las pantallas del juego.
+### ✔ Análisis de Datos (OLAP)
+- Construcción de un Data Warehouse con esquema estrella
+- Implementación de un Cubo OLAP funcional
+- Análisis multidimensional por:
+  - **Tiempo** (día, mes, año, trimestre)
+  - **Jugador** (usuario, región, fecha registro)
+  - **Personaje** (clase, nivel, raza)
+  - **Evento** (tipo, dificultad, duración)
+- Visualización de consultas analíticas desde la interfaz web
+- Operaciones OLAP: Roll-up, Drill-down, Slice, Dice
 
 ---
 
-## 📁 4. Estructura de Archivos del Proyecto
+## 🏗️ 3. Arquitectura del Sistema
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      CAPA DE PRESENTACIÓN                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Lobby      │  │  Personajes  │  │  Cubo OLAP   │      │
+│  │  Inventario  │  │   Gremios    │  │  Dashboard   │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────┴─────────────────────────────────┐
+│                    CAPA DE APLICACIÓN                        │
+│                         Flask App                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ Autenticación│  │    ORM       │  │  API REST    │      │
+│  │   Seguridad  │  │  SQLAlchemy  │  │   Consultas  │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+        ┌───────────────────┴───────────────────┐
+        │                                       │
+        ↓                                       ↓
+┌───────────────────┐              ┌───────────────────────┐
+│   OLTP (public)   │              │   OLAP (dw schema)    │
+│   ─────────────   │    ETL       │   ──────────────────  │
+│  • Jugador        │ ──────────→  │  • dim_jugador        │
+│  • Personaje      │              │  • dim_personaje      │
+│  • Mascota        │              │  • dim_tiempo         │
+│  • Inventario     │              │  • dim_evento         │
+│  • Gremio         │              │  • fact_progreso      │
+│  • Logro          │              │                       │
+└───────────────────┘              └───────────────────────┘
+        │                                       │
+        └───────────────────┬───────────────────┘
+                            │
+                            ↓
+                ┌─────────────────────┐
+                │  PostgreSQL DB      │
+                │     (Supabase)      │
+                └─────────────────────┘
+```
+
+---
+
+## 🧱 4. Tecnologías Utilizadas
+
+### Backend
+| Tecnología | Versión | Propósito |
+|------------|---------|-----------|
+| **Flask** | 3.0.0 | Framework web |
+| **SQLAlchemy** | 3.1.1 | ORM para OLTP |
+| **Werkzeug** | 3.0.x | Seguridad y hashing |
+| **Jinja2** | 3.1.x | Motor de plantillas |
+| **psycopg2** | 2.9.9 | Conector PostgreSQL |
+| **python-dotenv** | 1.0.0 | Variables de entorno |
+
+### Base de Datos
+- **PostgreSQL** 15+
+- **Supabase** (hosting cloud)
+- Extensión `pgcrypto` para migración de contraseñas
+
+### Business Intelligence
+- **Data Warehouse** con modelo dimensional
+- **Esquema Estrella** (Star Schema)
+- **Consultas OLAP** en SQL puro
+- **ETL** en Python
+
+### Infraestructura
+- **Docker** y **Docker Compose**
+- **Gunicorn** (servidor WSGI)
+- **Render.com** (deployment)
+- **GitHub** (versionamiento y CI/CD)
+
+### Frontend
+- **Bootstrap** 5.x
+- **CSS** personalizado
+- **JavaScript** vanilla
+- **HTML5** + Jinja2
+
+---
+
+## 📁 5. Estructura del Proyecto
 
 ```
 PROYECTO/
 │
-├── .dist/
+├── etl/                           # 🔄 Proceso ETL completo
+│   ├── extract.py                 # Extracción desde OLTP
+│   ├── transform.py               # Transformación de datos
+│   ├── load_dimensions.py         # Carga de dimensiones
+│   ├── load_fact.py               # Carga de tabla de hechos
+│   ├── seed_dw.py                 # Poblado inicial del DW
+│   └── seed_dw_masivo.py          # Generación de datos masivos
 │
-├── static/
+├── sql/                           # 📜 Scripts SQL
+│   └── dw_schema.sql              # Esquema del Data Warehouse
+│
+├── static/                        # 🎨 Recursos estáticos
 │   ├── css/
 │   │   └── estilo.css
-│   │
 │   ├── img/
-│   │   └── icons/
-│   │       ├── icono.png
-│   │       └── iconoSF.png
-│   │
-│   ├── fondolobby.jpg
-│   ├── mascota01.png
-│   └── personaje01.png
+│   │   ├── icons/
+│   │   ├── fondolobby.jpg
+│   │   ├── personaje01.png
+│   │   └── mascota01.png
+│   └── js/
+│       └── scripts.js
 │
-├── js/
-│   └── scripts.js
-│
-├── templates/
-│   ├── dashboard.html
-│   ├── gremio.html
-│   ├── inventario.html
-│   ├── lobby.html
+├── templates/                     # 📄 Plantillas HTML
 │   ├── login.html
-│   ├── logros.html
-│   ├── mascotas.html
+│   ├── registro.html
+│   ├── lobby.html
 │   ├── personajes.html
-│   └── registro.html
+│   ├── mascotas.html
+│   ├── inventario.html
+│   ├── gremio.html
+│   ├── logros.html
+│   └── cubo.html                  # ⭐ Visualización del cubo OLAP
 │
-├── venv/
+├── venv/                          # 🐍 Entorno virtual
 │
-├── .env
+├── .env                           # 🔐 Variables de entorno
 ├── .gitignore
-├── config.py
-├── README.md
-├── requirements.txt
-└── videojuego.py
+├── config.py                      # ⚙️ Configuración de Flask
+├── videojuego.py                  # 🎮 Aplicación principal
+├── requirements.txt               # 📦 Dependencias Python
+├── Dockerfile                     # 🐳 Imagen Docker
+├── docker-compose.yml             # 🐳 Orquestación
+├── diagrama_estrella.html         # 📊 Visualización del esquema
+└── README.md                      # 📖 Este archivo
 ```
-
-## 📝 Descripción de Carpetas y Archivos
-
-### 📂 `/static`
-Contiene todos los archivos estáticos del proyecto (CSS, imágenes, recursos).
-
-- **`/css`** - Hojas de estilo
-  - `estilo.css` - Estilos personalizados del proyecto
-
-- **`/img`** - Imágenes y recursos visuales
-  - **`/icons`** - Iconos de la aplicación
-    - `icono.png` - Icono principal
-    - `iconoSF.png` - Icono sin fondo
-  - `fondolobby.jpg` - Imagen de fondo del lobby
-  - `mascota01.png` - Imagen de mascota ejemplo
-  - `personaje01.png` - Imagen de personaje ejemplo
-
-### 📂 `/js`
-Scripts JavaScript del cliente.
-
-- `scripts.js` - Lógica JavaScript para interactividad (CRUD, fetch API)
-
-### 📂 `/templates`
-Plantillas HTML renderizadas por Jinja2.
-
-- `dashboard.html` - Panel de control principal
-- `gremio.html` - Gestión de gremios (crear, unirse, abandonar)
-- `inventario.html` - Sistema de inventario multi-categoría
-- `lobby.html` - Sala de espera/menú principal con personaje activo
-- `login.html` - Página de inicio de sesión con migración de contraseñas
-- `logros.html` - Sistema de logros desbloqueables
-- `mascotas.html` - CRUD completo de mascotas
-- `personajes.html` - CRUD completo de personajes
-- `registro.html` - Página de registro con validación
-
-### 📂 `/venv`
-Entorno virtual de Python (no se sube a Git).
-
-### 📄 Archivos raíz
-
-- **`.dist/`** - Carpeta de distribución/build
-- **`.env`** - Variables de entorno (DATABASE_URL, SECRET_KEY)
-- **`.gitignore`** - Archivos ignorados por Git
-- **`config.py`** - Configuración de la aplicación y base de datos
-- **`README.md`** - Documentación del proyecto (este archivo)
-- **`requirements.txt`** - Dependencias de Python
-- **`videojuego.py`** - Aplicación principal Flask con todos los modelos y rutas
-
-### 📌 Flujo general
-
-1. Usuario accede a `/login` o `/registro`
-2. Sistema valida credenciales y migra contraseñas antiguas automáticamente
-3. Inicia sesión → sesión segura con Flask
-4. Accede al Lobby → ve su personaje y mascota activa
-5. Puede crear/editar personajes y mascotas
-6. Gestiona inventario (pociones, armas, armaduras)
-7. Se une o crea gremios
-8. Desbloquea logros
-9. APIs JSON disponibles para integraciones futuras
 
 ---
 
-## 🧬 5. Modelo Relacional de la Base de Datos
+## 🧬 6. Modelo Relacional OLTP
 
-### 🧔 Tabla: Jugador
-- `id_jugador` (PK)
-- `nombre_usuario`
-- `correo_electronico` (UNIQUE)
-- `contrasena_hash`
-- `id_personaje_activo` (FK → Personaje)
-- `id_mascota_activa` (FK → Mascota)
+### Entidades Principales
+
+#### 🧔 Jugador
+```sql
+CREATE TABLE jugador (
+    id_jugador SERIAL PRIMARY KEY,
+    nombre_usuario VARCHAR(100) NOT NULL,
+    correo_electronico VARCHAR(100) UNIQUE NOT NULL,
+    contrasena_hash VARCHAR(255) NOT NULL,
+    id_personaje_activo INT REFERENCES personaje(id_personaje),
+    id_mascota_activa INT REFERENCES mascota(id_mascota)
+);
+```
 
 **Relaciones:**
 - 1:N con Personaje
 - N:M con Gremio (via Pertenece)
 - N:M con Logro (via Obtiene)
 
-### ⚔ Tabla: Personaje
-- `id_personaje` (PK)
-- `id_jugador` (FK → Jugador)
-- `nombre`
-- `clase` (Guerrero, Mago, Arquero, etc.)
-- `nivel` (default: 1)
-
-**Relaciones:**
-- N:1 con Jugador
-- 1:N con Mascota
-- N:M con Objeto (via Inventario)
-
-### 🐾 Tabla: Mascota
-- `id_mascota` (PK)
-- `id_personaje` (FK → Personaje)
-- `nombre_mascota`
-- `tipo` (Dragón, Lobo, Fénix, etc.)
-- `nivel` (default: 1)
-
-**Relaciones:**
-- N:1 con Personaje
-
-### 🛡 Tabla: Objeto
-- `id_objeto` (PK)
-- `nombre`
-- `descripcion`
-- `valor` (precio en oro)
-- `rareza` (Común, Rara, Épica, Legendaria)
-
-**Relaciones:**
-- 1:1 con Pocion, Arma o Armadura (herencia)
-- N:M con Personaje (via Inventario)
-
-#### Subtipos (Herencia 1:1)
-
-**Pocion**
-- `id_objeto` (PK, FK → Objeto)
-- `efecto` (Restaurar vida, aumentar maná, etc.)
-
-**Arma**
-- `id_objeto` (PK, FK → Objeto)
-- `dano_base` (daño base del arma)
-
-**Armadura**
-- `id_objeto` (PK, FK → Objeto)
-- `valor_defensa` (puntos de defensa)
-
-### 🏅 Tabla: Logro
-- `id_logro` (PK)
-- `nombre_logro`
-- `descripcion_logro`
-
-**Relaciones:**
-- N:M con Jugador (via Obtiene)
-
-### 🏰 Tabla: Gremio
-- `id_gremio` (PK)
-- `nombre`
-- `fecha_fundacion`
-
-**Relaciones:**
-- N:M con Jugador (via Pertenece)
-
----
-
-## 🔗 6. Tablas Asociativas
-
-### 🔹 Pertenece (Jugador ↔ Gremio)
-- `id_jugador` (PK, FK → Jugador)
-- `id_gremio` (PK, FK → Gremio)
-
-**Restricción:** Un jugador solo puede pertenecer a un gremio a la vez.
-
-### 🔹 Inventario (Personaje ↔ Objeto)
-- `id_personaje` (PK, FK → Personaje)
-- `id_objeto` (PK, FK → Objeto)
-- `cantidad` (número de unidades del objeto)
-
-### 🔹 Obtiene (Jugador ↔ Logro)
-- `id_jugador` (PK, FK → Jugador)
-- `id_logro` (PK, FK → Logro)
-
----
-
-## 🛡️ 7. Seguridad Implementada
-
-El proyecto incluye medidas de seguridad esenciales para una aplicación en producción:
-
-### ✔ 1. Prevención de Inyección SQL con ORM
-
-Usamos SQLAlchemy ORM, que parametriza automáticamente todas las consultas:
-
-```python
-# ❌ NUNCA hagas esto (vulnerable)
-query = f"SELECT * FROM jugador WHERE correo = '{correo}'"
-
-# ✅ Usa ORM (seguro)
-jugador = Jugador.query.filter_by(correo_electronico=correo).first()
+#### ⚔ Personaje
+```sql
+CREATE TABLE personaje (
+    id_personaje SERIAL PRIMARY KEY,
+    id_jugador INT NOT NULL REFERENCES jugador(id_jugador),
+    nombre VARCHAR(100) NOT NULL,
+    clase VARCHAR(50) NOT NULL,
+    nivel INT DEFAULT 1
+);
 ```
 
-- ✔ Variables separadas de la consulta
-- ✔ SQLAlchemy protege automáticamente los parámetros
-- ✔ No hay concatenación de strings en SQL
+#### 🐾 Mascota
+```sql
+CREATE TABLE mascota (
+    id_mascota SERIAL PRIMARY KEY,
+    id_personaje INT NOT NULL REFERENCES personaje(id_personaje),
+    nombre_mascota VARCHAR(50) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    nivel INT DEFAULT 1
+);
+```
 
-### ✔ 2. Sistema de Contraseñas Híbrido
+#### 🛡 Objeto (con herencia)
+```sql
+-- Tabla padre
+CREATE TABLE objeto (
+    id_objeto SERIAL PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    descripcion TEXT,
+    valor INT,
+    rareza VARCHAR(30)
+);
 
-**Migración automática de contraseñas:**
+-- Tablas hijas (herencia 1:1)
+CREATE TABLE pocion (
+    id_objeto INT PRIMARY KEY REFERENCES objeto(id_objeto),
+    efecto TEXT
+);
 
-```python
-# Hash nuevo (Werkzeug)
-if jugador.contrasena_hash.startswith("pbkdf2:") or jugador.contrasena_hash.startswith("scrypt:"):
-    if check_password_hash(jugador.contrasena_hash, contrasena):
-        # Login exitoso
-        
-# Hash viejo (PostgreSQL crypt) - Migración automática
-else:
-    result = db.session.execute(
-        text("SELECT id_jugador FROM jugador WHERE id_jugador = :id AND contrasena_hash = crypt(:pass, contrasena_hash)"),
-        {"id": jugador.id_jugador, "pass": contrasena}
-    ).fetchone()
+CREATE TABLE arma (
+    id_objeto INT PRIMARY KEY REFERENCES objeto(id_objeto),
+    dano_base INT
+);
+
+CREATE TABLE armadura (
+    id_objeto INT PRIMARY KEY REFERENCES objeto(id_objeto),
+    valor_defensa INT
+);
+```
+
+### Tablas Asociativas
+
+#### 📦 Inventario (Personaje ↔ Objeto)
+```sql
+CREATE TABLE inventario (
+    id_personaje INT REFERENCES personaje(id_personaje),
+    id_objeto INT REFERENCES objeto(id_objeto),
+    cantidad INT DEFAULT 1,
+    PRIMARY KEY (id_personaje, id_objeto)
+);
+```
+
+#### 🏰 Pertenece (Jugador ↔ Gremio)
+```sql
+CREATE TABLE pertenece (
+    id_jugador INT REFERENCES jugador(id_jugador),
+    id_gremio INT REFERENCES gremio(id_gremio),
+    PRIMARY KEY (id_jugador, id_gremio)
+);
+```
+
+---
+
+## 📊 7. Data Warehouse - Modelo Dimensional
+
+### Esquema Estrella Implementado
+
+```
+                 dim_tiempo
+              (fecha, mes, año)
+                     |
+                     |
+dim_jugador ─────────┼───────── dim_personaje
+  (usuario)          |           (clase, nivel)
+                     |
+              fact_progreso
+           (xp, oro, duración)
+                     |
+                     |
+                dim_evento
+            (tipo, dificultad)
+```
+
+### Dimensiones
+
+#### 📅 dim_tiempo
+```sql
+CREATE TABLE dw.dim_tiempo (
+    id_tiempo_sk SERIAL PRIMARY KEY,
+    fecha DATE UNIQUE NOT NULL,
+    dia INT CHECK (dia BETWEEN 1 AND 31),
+    mes INT CHECK (mes BETWEEN 1 AND 12),
+    anio INT CHECK (anio >= 2000),
+    trimestre INT CHECK (trimestre BETWEEN 1 AND 4)
+);
+```
+
+**Jerarquía:** Día → Mes → Trimestre → Año
+
+#### 👤 dim_jugador
+```sql
+CREATE TABLE dw.dim_jugador (
+    id_jugador_sk SERIAL PRIMARY KEY,
+    id_jugador_nk INT NOT NULL,  -- Natural key
+    nombre_usuario TEXT NOT NULL,
+    correo TEXT,
+    fecha_registro DATE,
+    pais TEXT
+);
+```
+
+#### 🧙 dim_personaje
+```sql
+CREATE TABLE dw.dim_personaje (
+    id_personaje_sk SERIAL PRIMARY KEY,
+    id_personaje_nk INT NOT NULL,
+    clase TEXT NOT NULL,
+    nivel_inicial INT CHECK (nivel_inicial >= 1),
+    raza TEXT
+);
+```
+
+#### 🎯 dim_evento
+```sql
+CREATE TABLE dw.dim_evento (
+    id_evento_sk SERIAL PRIMARY KEY,
+    tipo_evento TEXT NOT NULL,
+    descripcion TEXT,
+    dificultad TEXT CHECK (dificultad IN ('baja', 'media', 'alta'))
+);
+```
+
+### Tabla de Hechos
+
+#### 📈 fact_progreso
+```sql
+CREATE TABLE dw.fact_progreso (
+    id_progreso SERIAL PRIMARY KEY,
     
-    if result:
-        # Rehashear con Werkzeug
-        jugador.contrasena_hash = generate_password_hash(contrasena)
-        db.session.commit()
+    -- Claves foráneas (FK a dimensiones)
+    id_jugador_sk INT REFERENCES dw.dim_jugador(id_jugador_sk),
+    id_personaje_sk INT REFERENCES dw.dim_personaje(id_personaje_sk),
+    id_tiempo_sk INT REFERENCES dw.dim_tiempo(id_tiempo_sk),
+    id_evento_sk INT REFERENCES dw.dim_evento(id_evento_sk),
+    
+    -- Medidas (métricas agregables)
+    xp_ganada INT NOT NULL CHECK (xp_ganada >= 0),
+    oro_ganado INT NOT NULL CHECK (oro_ganado >= 0),
+    nivel_resultante INT CHECK (nivel_resultante >= 1),
+    duracion_evento INT CHECK (duracion_evento >= 0)
+);
 ```
 
-**Nuevos registros:**
-```python
-hash_password = generate_password_hash(contrasena)
-```
-
-### ✔ 3. Sesiones seguras con secret key
-
-```python
-app.secret_key = os.getenv("SECRET_KEY", "clave_segura_para_sesiones")
-```
-
-- ✔ Cookies firmadas y encriptadas
-- ✔ Secret key almacenada en variables de entorno
-
-### ✔ 4. Validación de acceso en cada ruta
-
-Cada ruta protegida verifica la sesión activa:
-
-```python
-if 'id_jugador' not in session:
-    flash("Debes iniciar sesión primero.", "warning")
-    return redirect(url_for('login'))
-```
-
-### ✔ 5. Pool de conexiones con auto-reconexión
-
-```python
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_pre_ping": True,      # 🔥 detecta conexiones muertas
-    "pool_recycle": 280,        # 🔁 recicla conexiones cada 280s
-}
-```
-
-- ✔ Detecta conexiones muertas antes de usarlas
-- ✔ Recicla conexiones automáticamente
-- ✔ Evita errores por timeout de Supabase
-
-### ✔ 6. Validación de pertenencia de recursos
-
-Antes de editar/eliminar, se valida que el recurso pertenezca al usuario:
-
-```python
-if personaje.id_jugador != session['id_jugador']:
-    return jsonify({"error": "Acción no permitida"}), 403
+**Índices para optimización:**
+```sql
+CREATE INDEX idx_fact_jugador ON dw.fact_progreso(id_jugador_sk);
+CREATE INDEX idx_fact_personaje ON dw.fact_progreso(id_personaje_sk);
+CREATE INDEX idx_fact_tiempo ON dw.fact_progreso(id_tiempo_sk);
+CREATE INDEX idx_fact_evento ON dw.fact_progreso(id_evento_sk);
 ```
 
 ---
 
-## 🚦 8. Rutas Principales
+## 🧊 8. Cubo de Datos OLAP
 
-### 🔐 Autenticación
+### Definición del Cubo
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/` | GET | Redirige a login |
-| `/login` | GET/POST | Iniciar sesión con migración de contraseñas |
-| `/registro` | GET/POST | Registrar nuevo jugador |
-| `/logout` | GET | Cerrar sesión y limpiar datos |
+**Nombre:** Cubo de Progreso del Jugador
 
-### 🏠 Lobby y Dashboard
+**Granularidad:** Un registro por evento realizado por un personaje en una fecha específica
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/lobby` | GET | Panel principal con personaje y mascota activa |
+### Medidas del Cubo
 
-### 🧙 Personajes
+| Medida | Tipo | Agregación | Descripción |
+|--------|------|------------|-------------|
+| `xp_ganada` | Flujo | SUM | Experiencia obtenida |
+| `oro_ganado` | Flujo | SUM | Oro acumulado |
+| `nivel_resultante` | Snapshot | MAX | Nivel alcanzado |
+| `duracion_evento` | Flujo | AVG, SUM | Tiempo del evento |
+| `conteo_eventos` | Derivada | COUNT | Total de eventos |
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/personajes` | GET/POST | Listar, crear y editar personajes |
-| `/eliminar_personaje/<id>` | DELETE | Eliminar personaje (AJAX) |
-| `/seleccionar_personaje/<id>` | POST | Activar personaje seleccionado |
+### Dimensiones del Cubo
 
-### 🐾 Mascotas
+1. **Tiempo** (día, mes, trimestre, año)
+2. **Jugador** (usuario, región, fecha registro)
+3. **Personaje** (clase, nivel inicial, raza)
+4. **Evento** (tipo, descripción, dificultad)
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/mascotas` | GET/POST | Listar, crear y editar mascotas |
-| `/eliminar_mascota/<id>` | DELETE | Eliminar mascota (AJAX) |
-| `/seleccionar_mascota/<id>` | POST | Activar mascota seleccionada |
+### Operaciones OLAP Implementadas
 
-### 🎒 Inventario
+#### 🔼 ROLL-UP
+Agregación de datos a nivel superior de jerarquía
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/inventario/pociones` | GET/POST | Gestionar pociones |
-| `/inventario/armas` | GET/POST | Gestionar armas |
-| `/inventario/armaduras` | GET/POST | Gestionar armaduras |
+```sql
+-- Experiencia total por año
+SELECT t.anio, t.mes, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+GROUP BY t.anio, t.mes
+ORDER BY t.anio, t.mes;
+```
 
-**Acciones disponibles:**
-- ➕ Agregar objeto existente
-- 🆕 Crear nuevo objeto
-- ➕ Aumentar cantidad
-- ➖ Disminuir cantidad
-- 🗑️ Eliminar del inventario
+#### 🔽 DRILL-DOWN
+Desagregación a nivel inferior de jerarquía
 
-### 🏰 Gremios
+```sql
+-- Experiencia diaria por fecha específica
+SELECT t.fecha, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+WHERE t.anio = :anio AND t.mes = :mes
+GROUP BY t.fecha
+ORDER BY t.fecha;
+```
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/gremio` | GET | Ver gremio actual o lista de gremios |
-| `/crear_gremio` | POST | Crear nuevo gremio |
-| `/unirse_gremio/<id>` | POST | Unirse a un gremio |
-| `/abandonar_gremio` | POST | Salir del gremio actual |
+#### 🔪 SLICE
+Corte de una dimensión específica
 
-### 🏅 Logros
+```sql
+-- Progreso en un año específico
+SELECT t.mes, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+WHERE t.anio = 2025
+GROUP BY t.mes
+ORDER BY t.mes;
+```
 
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/logros` | GET | Ver logros desbloqueados y bloqueados |
+#### 🎲 DICE
+Filtrado por múltiples dimensiones
 
-### 🔧 API JSON
+```sql
+-- Experiencia por clase y año
+SELECT p.clase, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+WHERE t.anio = 2025
+  AND (:clase IS NULL OR p.clase = :clase)
+GROUP BY p.clase
+ORDER BY p.clase;
+```
 
-| Ruta | Descripción |
-|------|-------------|
-| `/api/personaje/<id>` | Retorna datos del personaje en JSON |
-| `/api/mascota/<id>` | Retorna datos de la mascota en JSON |
+### Visualización del Cubo
 
-### 🛠 Pruebas y Mantenimiento
+**Ruta web:** `/cubo`
 
-| Ruta | Descripción |
-|------|-------------|
-| `/test-db` | Verifica conexión con la base de datos |
-| `/test-jugador` | Prueba consulta ORM de jugador |
+La interfaz permite:
+- ✅ Selección de filtros individuales por operación
+- ✅ Visualización de resultados en tablas dinámicas
+- ✅ Navegación entre diferentes perspectivas
+- ✅ Integración directa con el backend Flask
 
 ---
 
-## 🧪 9. Cómo Ejecutar el Proyecto Localmente
+## 🔄 9. Proceso ETL
 
-### 1️⃣ Clonar repositorio
+### Pipeline Completo
+
+```
+┌─────────────┐
+│  EXTRACT    │  Lectura desde OLTP (public schema)
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│ TRANSFORM   │  Limpieza, validación y conversión
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│    LOAD     │  Inserción en DW (dw schema)
+└─────────────┘
+```
+
+### Fase 1: Extracción
+
+**Script:** `etl/extract.py`
+
+```python
+def extraer_jugadores():
+    cursor.execute("""
+        SELECT id_jugador, nombre_usuario, correo_electronico,
+               DATE(fecha_hora) AS fecha_registro
+        FROM jugador;
+    """)
+    return cursor.fetchall()
+
+def extraer_personajes():
+    cursor.execute("""
+        SELECT id_personaje, id_jugador, nombre, clase, nivel
+        FROM personaje
+        ORDER BY id_personaje;
+    """)
+    return cursor.fetchall()
+```
+
+### Fase 2: Transformación
+
+**Script:** `etl/transform.py`
+
+```python
+def transformar_jugadores(jugadores):
+    resultado = []
+    for j in jugadores:
+        fila = {
+            "id_jugador_nk": j["id_jugador"],
+            "nombre_usuario": j["nombre_usuario"].strip(),
+            "correo": j["correo_electronico"],
+            "fecha_registro": j["fecha_registro"],
+            "pais": None  # Enriquecimiento futuro
+        }
+        resultado.append(fila)
+    return resultado
+
+def transformar_tiempo(fechas):
+    resultado = {}
+    for fecha in fechas:
+        if fecha not in resultado:
+            resultado[fecha] = {
+                "fecha": fecha,
+                "dia": fecha.day,
+                "mes": fecha.month,
+                "anio": fecha.year,
+                "trimestre": (fecha.month - 1) // 3 + 1
+            }
+    return list(resultado.values())
+```
+
+### Fase 3: Carga
+
+**Script:** `etl/load_dimensions.py`
+
+```python
+def cargar_dim_jugador(jugadores):
+    for j in jugadores:
+        cursor.execute("""
+            INSERT INTO dw.dim_jugador
+            (id_jugador_nk, nombre_usuario, correo, fecha_registro, pais)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (id_jugador_nk) DO NOTHING;
+        """, (j["id_jugador_nk"], j["nombre_usuario"],
+              j["correo"], j["fecha_registro"], j["pais"]))
+```
+
+**Script:** `etl/load_fact.py`
+
+```python
+def cargar_fact_progreso():
+    # Obtener claves sustitutas de dimensiones
+    id_jugador_sk = obtener_sk_jugador(jugador_nk)
+    id_personaje_sk = obtener_sk_personaje(personaje_nk)
+    id_tiempo_sk = obtener_sk_tiempo(fecha)
+    id_evento_sk = obtener_sk_evento(tipo_evento)
+    
+    # Insertar en tabla de hechos
+    cursor.execute("""
+        INSERT INTO dw.fact_progreso (
+            id_jugador_sk, id_personaje_sk, id_tiempo_sk, id_evento_sk,
+            xp_ganada, oro_ganado, nivel_resultante, duracion_evento
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (id_jugador_sk, id_personaje_sk, id_tiempo_sk, id_evento_sk,
+          xp, oro, nivel, duracion))
+```
+
+### Poblado Masivo
+
+**Script:** `etl/seed_dw_masivo.py`
+
+Genera datos de prueba realistas:
+- 📅 **Rango temporal:** 2022-2026
+- 👥 **Jugadores:** Todos los del sistema
+- 🎲 **Eventos aleatorios:** Distribución realista
+- 📊 **Volumen:** Miles de registros para análisis BI
+
+**Ejecución:**
+```bash
+python etl/seed_dw_masivo.py
+```
+
+---
+
+## 🚀 10. Instalación y Ejecución
+
+### Requisitos Previos
+
+- Python 3.11+
+- PostgreSQL 15+ o cuenta en Supabase
+- Git
+- Docker (opcional)
+
+### Instalación Local
+
+#### 1️⃣ Clonar el repositorio
 
 ```bash
-git clone https://github.com/usuario/proyecto-videojuego.git
-cd proyecto-videojuego
+git clone https://github.com/IISGRI/Proyecto-BD.git
+cd Proyecto-BD
 ```
 
-### 2️⃣ Crear entorno virtual
+#### 2️⃣ Crear entorno virtual
 
 ```bash
 # Windows
@@ -474,243 +654,71 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3️⃣ Instalar dependencias
+#### 3️⃣ Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Crear archivo `.env`
+#### 4️⃣ Configurar variables de entorno
+
+Crear archivo `.env`:
 
 ```env
 DATABASE_URL=postgresql://usuario:password@host:puerto/database
 SECRET_KEY=tu-clave-secreta-super-segura
 ```
 
-### 5️⃣ Configurar la base de datos
+#### 5️⃣ Crear esquema del Data Warehouse
 
-Asegúrate de que las tablas estén creadas en PostgreSQL/Supabase. Puedes usar:
-
-```python
-from videojuego import db, app
-
-with app.app_context():
-    db.create_all()
+```bash
+# Ejecutar en PostgreSQL/Supabase
+psql -h host -U usuario -d database -f sql/dw_schema.sql
 ```
 
-### 6️⃣ Ejecutar la aplicación
+O desde Supabase SQL Editor, ejecutar el contenido de `sql/dw_schema.sql`
+
+#### 6️⃣ (Opcional) Poblar el Data Warehouse
+
+```bash
+# Poblado inicial
+python etl/seed_dw.py
+
+# Poblado masivo para análisis
+python etl/seed_dw_masivo.py
+```
+
+#### 7️⃣ Ejecutar la aplicación
 
 ```bash
 python videojuego.py
 ```
 
-La aplicación estará disponible en: `http://127.0.0.1:5000`
+Acceder a: `http://127.0.0.1:5000`
 
 ---
 
-## 🌐 10. Despliegue en Render + Supabase
+### Instalación con Docker
 
-### 📘 Configuración de Supabase
-
-1. **Crear proyecto en Supabase**
-2. **Copiar la cadena de conexión:** Settings → Database → Connection String
-3. **Habilitar extensión pgcrypto** (para migración de contraseñas antiguas):
-   ```sql
-   CREATE EXTENSION IF NOT EXISTS pgcrypto;
-   ```
-4. **Crear las tablas** usando el esquema del modelo relacional
-
-### 🚀 Configuración de Render
-
-1. **Crear nuevo Web Service**
-2. **Conectar repositorio de GitHub**
-3. **Configurar variables de entorno:**
-   ```
-   DATABASE_URL=postgresql://...
-   SECRET_KEY=clave-super-segura
-   ```
-4. **Configurar Build Command:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. **Configurar Start Command:**
-   ```bash
-   gunicorn videojuego:app
-   ```
-
-### 📦 Agregar `gunicorn` a requirements.txt
-
-```txt
-Flask==3.0.0
-Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9
-python-dotenv==1.0.0
-gunicorn==21.2.0
-```
-
-### ✅ Verificar despliegue
-
-Una vez desplegado, accede a:
-```
-https://tu-proyecto.onrender.com
-```
-
----
-
-## 🎮 11. Funcionalidades Implementadas
-
-### ✔ Sistema de Autenticación
-- Login seguro con migración automática de contraseñas
-- Registro con validación de correo único
-- Hash de contraseñas con Werkzeug (pbkdf2/scrypt)
-- Soporte para contraseñas antiguas con PostgreSQL crypt
-- Sesiones seguras con Flask
-
-### ✔ Gestión de Personajes
-- CRUD completo (Crear, Leer, Actualizar, Eliminar)
-- Selección de personaje activo
-- Visualización en lobby
-- API JSON para consultas
-
-### ✔ Gestión de Mascotas
-- CRUD completo vinculado al personaje activo
-- Selección de mascota activa
-- Validación de pertenencia
-- Tipos personalizables (Dragón, Lobo, Fénix, etc.)
-
-### ✔ Sistema de Inventario
-- Gestión multi-categoría (Pociones, Armas, Armaduras)
-- Agregar objetos existentes
-- Crear nuevos objetos con atributos especiales
-- Control de cantidades
-- Sistema de rareza (Común, Rara, Épica, Legendaria)
-
-### ✔ Sistema de Gremios
-- Crear nuevos gremios
-- Unirse a gremios existentes
-- Ver miembros del gremio
-- Abandonar gremio
-- Restricción: un jugador por gremio
-
-### ✔ Sistema de Logros
-- Visualización de logros desbloqueados
-- Estado de progreso
-- Sistema extensible para nuevas mecánicas
-
-### ✔ Arquitectura y Seguridad
-- SQLAlchemy ORM (prevención de SQL Injection)
-- Pool de conexiones con auto-reconexión
-- Validación de sesiones en todas las rutas protegidas
-- Validación de pertenencia de recursos
-- Manejo de errores con rollback automático
-- Flash messages para feedback al usuario
-
-### ✔ APIs REST
-- `/api/personaje/<id>` - Datos del personaje
-- `/api/mascota/<id>` - Datos de la mascota
-- Respuestas en formato JSON
-
----
-# 🐳 12. Contenerización con Docker
-
-El proyecto fue dockerizado para garantizar **portabilidad, consistencia entre entornos y facilidad de despliegue en producción**.
-
-La aplicación se ejecuta dentro de un contenedor Docker que incluye:
-
-- ✔ Entorno Python aislado
-- ✔ Instalación automática de dependencias
-- ✔ Servidor de producción Gunicorn
-- ✔ Configuración mediante variables de entorno
-
----
-
-## 📦 Dockerfile
-
-El contenedor utiliza una imagen ligera de Python y ejecuta la aplicación con Gunicorn:
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "videojuego:app"]
-```
-
-### 🔍 Explicación del Dockerfile
-
-| Línea | Descripción |
-|-------|-------------|
-| `FROM python:3.11-slim` | Imagen base ligera de Python 3.11 |
-| `WORKDIR /app` | Establece `/app` como directorio de trabajo |
-| `ENV PYTHONDONTWRITEBYTECODE=1` | Evita crear archivos `.pyc` (optimización) |
-| `ENV PYTHONUNBUFFERED=1` | Logs en tiempo real sin buffering |
-| `COPY requirements.txt .` | Copia el archivo de dependencias |
-| `RUN pip install --no-cache-dir -r requirements.txt` | Instala dependencias sin cache |
-| `COPY . .` | Copia todo el código de la aplicación |
-| `CMD ["gunicorn", "-b", "0.0.0.0:5000", "videojuego:app"]` | Ejecuta Gunicorn en puerto 5000 |
-
----
-
-## 🧩 docker-compose.yml (entorno local)
-
-Para desarrollo local se utiliza **Docker Compose**, permitiendo levantar el proyecto con un solo comando:
-
-```yaml
-services:
-  web:
-    build: .
-    container_name: videojuego_flask
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-```
-
-### 🔍 Explicación del docker-compose.yml
-
-| Parámetro | Descripción |
-|-----------|-------------|
-| `build: .` | Construye la imagen desde el Dockerfile local |
-| `container_name: videojuego_flask` | Nombre del contenedor |
-| `ports: "5000:5000"` | Mapea el puerto 5000 del contenedor al host |
-| `env_file: .env` | Carga variables de entorno desde `.env` |
-| `volumes: .:/app` | Sincroniza cambios del código en tiempo real |
-
----
-
-## ▶️ Ejecución local con Docker
-
-### 1️⃣ Construir la imagen
+#### 1️⃣ Construir la imagen
 
 ```bash
 docker compose build
 ```
 
-### 2️⃣ Levantar el contenedor
+#### 2️⃣ Levantar los servicios
 
 ```bash
 docker compose up
 ```
 
-### 3️⃣ Acceder a la aplicación
-
-La aplicación queda disponible en:
+#### 3️⃣ Acceder a la aplicación
 
 ```
 http://localhost:5000
 ```
 
-### 🛑 Detener el contenedor
+#### 4️⃣ Detener los servicios
 
 ```bash
 docker compose down
@@ -718,190 +726,551 @@ docker compose down
 
 ---
 
-## 🎯 Ventajas de Docker en este proyecto
+## 🌐 11. Despliegue en Producción
 
-| Ventaja | Descripción |
-|---------|-------------|
-| ✔ **Portabilidad** | Funciona igual en Windows, Mac y Linux |
-| ✔ **Consistencia** | Mismo entorno en desarrollo y producción |
-| ✔ **Aislamiento** | No interfiere con otras instalaciones de Python |
-| ✔ **Despliegue rápido** | Se despliega en segundos en cualquier servidor |
-| ✔ **Escalabilidad** | Fácil de replicar en múltiples instancias |
-
----
-
-# 🌐 12. Despliegue en Producción (Render + Supabase)
-
-El sistema fue desplegado exitosamente en la nube utilizando **Render**, conectándose a una base de datos PostgreSQL alojada en **Supabase**.
-
----
-
-## 🚀 Flujo de despliegue
-
-```mermaid
-graph LR
-    A[GitHub Repository] --> B[Render detecta Dockerfile]
-    B --> C[Build automático]
-    C --> D[Deploy con Gunicorn]
-    D --> E[Conexión a Supabase]
-    E --> F[Aplicación en producción]
-```
-
-### Pasos del despliegue:
-
-1. **El código fuente se aloja en GitHub**
-2. **Render detecta automáticamente el `Dockerfile`**
-3. **Cada `git push` ejecuta un nuevo despliegue (CI/CD)**
-4. **Las variables sensibles se configuran en Render**
-5. **Supabase actúa como base de datos externa segura**
-
----
-
-## 🔐 Variables de entorno en producción
-
-Configuradas directamente en el panel de Render:
-
-```env
-DATABASE_URL=postgresql://user:password@host:port/database
-SECRET_KEY=clave-super-segura-generada-aleatoriamente
-```
-
-⚠️ **Importante:** El archivo `.env` **NO se sube al repositorio** por motivos de seguridad (incluido en `.gitignore`).
-
----
-
-## 🏗️ Configuración en Render
-
-### 1️⃣ Crear nuevo Web Service
-
-1. Inicia sesión en [Render](https://render.com)
-2. Haz clic en **"New +"** → **"Web Service"**
-3. Conecta tu repositorio de GitHub
-
-### 2️⃣ Configurar el servicio
-
-| Campo | Valor |
-|-------|-------|
-| **Name** | `videojuego-medieval` |
-| **Region** | Selecciona la más cercana |
-| **Branch** | `main` |
-| **Root Directory** | (dejar vacío) |
-| **Runtime** | `Docker` |
-| **Build Command** | (automático) |
-| **Start Command** | (automático desde Dockerfile) |
-
-### 3️⃣ Agregar variables de entorno
-
-En la sección **"Environment"** agrega:
-
-```
-DATABASE_URL = postgresql://...
-SECRET_KEY = tu-clave-secreta
-```
-
-### 4️⃣ Deploy
-
-Haz clic en **"Create Web Service"** y espera el despliegue automático.
-
----
-
-## 📊 Arquitectura en producción
+### Arquitectura en Producción
 
 ```
 ┌─────────────┐
 │   Usuario   │
 └──────┬──────┘
-       │ HTTPS
+       │ HTTPS (SSL/TLS)
        ↓
 ┌─────────────────┐
-│  Render (Web)   │
-│   Flask App     │
-│   + Gunicorn    │
+│  Render.com     │
+│  Flask + Docker │
+│  Gunicorn WSGI  │
 └────────┬────────┘
-         │ PostgreSQL
+         │ PostgreSQL (SSL)
          ↓
 ┌─────────────────┐
-│    Supabase     │
-│   PostgreSQL    │
-│  (Base de datos)│
+│   Supabase      │
+│  PostgreSQL 15+ │
+│  OLTP + DW      │
 └─────────────────┘
 ```
 
----
+### Configuración en Render
 
-## 🌍 Acceso a la aplicación
+#### 1️⃣ Crear Web Service
 
-Una vez desplegado, el sistema es accesible desde una **URL pública proporcionada por Render**, permitiendo su uso en un entorno real de producción.
+1. Conectar repositorio de GitHub
+2. Seleccionar **Docker** como runtime
+3. Configurar variables de entorno:
 
-Ejemplo de URL:
-```
-https://videojuego-medieval.onrender.com
-```
-
----
-
-## 🔄 CI/CD Automático
-
-Render ofrece **integración continua** sin configuración adicional:
-
-- ✔ Cada `git push` a la rama principal desencadena un nuevo build
-- ✔ Se construye la imagen Docker automáticamente
-- ✔ Se despliega la nueva versión sin downtime
-- ✔ Rollback automático si falla el despliegue
-
----
-
-## 📈 Monitoreo y Logs
-
-Render proporciona herramientas de monitoreo integradas:
-
-- **Logs en tiempo real** desde el dashboard
-- **Métricas de CPU y memoria**
-- **Alertas de disponibilidad**
-- **Historial de despliegues**
-
-Acceso a logs:
-```bash
-# Desde el dashboard de Render
-Logs → Ver logs en tiempo real
+```env
+DATABASE_URL=postgresql://...
+SECRET_KEY=...
 ```
 
----
+#### 2️⃣ Deploy automático
 
-## 🛡️ Seguridad en producción
+- ✅ Cada `git push` genera un nuevo despliegue
+- ✅ Build automático desde `Dockerfile`
+- ✅ Rollback disponible en caso de fallo
 
-| Medida | Implementación |
-|--------|----------------|
-| ✔ **HTTPS** | Certificado SSL gratuito por defecto |
-| ✔ **Variables de entorno** | Almacenadas de forma segura en Render |
-| ✔ **Conexión a BD** | Cifrada con SSL/TLS (Supabase) |
-| ✔ **Firewall** | Solo puertos necesarios expuestos |
-| ✔ **Hashing de contraseñas** | Werkzeug + migración automática |
-| ✔ **Prevención SQL Injection** | SQLAlchemy ORM |
+#### 3️⃣ Acceso a la aplicación
+
+```
+https://videojuegobd.onrender.com
+```
+
+### Configuración en Supabase
+
+1. **Crear proyecto** en Supabase
+2. **Copiar Connection String** desde Settings → Database
+3. **Habilitar extensión pgcrypto**:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
+
+4. **Crear esquema DW**:
+
+```sql
+CREATE SCHEMA IF NOT EXISTS dw;
+```
+
+5. **Ejecutar scripts** de creación de tablas
 
 ---
 
-## 🚦 Estado del servicio
+## 🎮 12. Funcionalidades Implementadas
 
-Puedes verificar el estado del servicio en:
+### Sistema Transaccional (OLTP)
 
+#### ✔ Autenticación y Seguridad
+- Registro de nuevos jugadores con validación
+- Login seguro con migración automática de contraseñas
+- Hash con Werkzeug (pbkdf2/scrypt)
+- Soporte para contraseñas legacy con PostgreSQL crypt
+- Sesiones seguras con cookies firmadas
+- Validación de acceso en todas las rutas protegidas
+
+#### ✔ Gestión de Personajes
+- CRUD completo (Crear, Leer, Actualizar, Eliminar)
+- Selección de personaje activo
+- Visualización en lobby dinámico
+- Clases disponibles: Guerrero, Mago, Arquero, etc.
+- Sistema de niveles
+
+#### ✔ Gestión de Mascotas
+- CRUD completo vinculado al personaje activo
+- Selección de mascota activa
+- Tipos personalizables (Dragón, Lobo, Fénix, etc.)
+- Sistema de niveles independiente
+- Validación de pertenencia al jugador
+
+#### ✔ Sistema de Inventario
+- Gestión multi-categoría:
+  - 🧪 Pociones (con efectos)
+  - ⚔️ Armas (con daño base)
+  - 🛡️ Armaduras (con defensa)
+- Agregar objetos existentes
+- Crear nuevos objetos con atributos especiales
+- Control de cantidades (+/- unidades)
+- Sistema de rareza (Común, Rara, Épica, Legendaria)
+- Herencia 1:1 con tabla Objeto
+
+#### ✔ Sistema de Gremios
+- Crear nuevos gremios con fecha de fundación
+- Unirse a gremios existentes
+- Ver lista de miembros del gremio
+- Abandonar gremio
+- Restricción: un jugador por gremio a la vez
+
+#### ✔ Sistema de Logros
+- Visualización de logros desbloqueados
+- Estado de progreso (bloqueado/desbloqueado)
+- Sistema extensible para nuevas mecánicas
+- Asociación N:M con jugadores
+
+#### ✔ APIs REST
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/personaje/<id>` | GET | Datos del personaje en JSON |
+| `/api/mascota/<id>` | GET | Datos de la mascota en JSON |
+| `/test-db` | GET | Verificar conexión a base de datos |
+| `/test-jugador` | GET | Prueba de consulta ORM |
+
+---
+
+### Sistema Analítico (OLAP)
+
+#### ✔ Data Warehouse
+- Esquema independiente del OLTP (`dw` schema)
+- Modelo dimensional con esquema estrella
+- 4 dimensiones + 1 tabla de hechos
+- Claves sustitutas para independencia del sistema operacional
+- Índices optimizados para consultas analíticas
+- Separación física y lógica de datos transaccionales
+
+#### ✔ Cubo OLAP
+- Definición formal con medidas y dimensiones
+- Granularidad diaria por personaje
+- Jerarquías temporales (día → mes → trimestre → año)
+- 5 medidas analíticas (xp, oro, nivel, duración, conteo)
+- 4 dimensiones analíticas (tiempo, jugador, personaje, evento)
+
+#### ✔ Operaciones OLAP
+| Operación | Implementada | Descripción |
+|-----------|--------------|-------------|
+| **Roll-up** 🔼 | ✅ | Agregación temporal (día → mes → año) |
+| **Drill-down** 🔽 | ✅ | Desagregación (año → mes → día) |
+| **Slice** 🔪 | ✅ | Filtro por una dimensión específica |
+| **Dice** 🎲 | ✅ | Filtro por múltiples dimensiones |
+
+#### ✔ Proceso ETL
+- **Extract**: Lectura desde OLTP con psycopg2
+- **Transform**: Limpieza, validación y normalización en Python
+- **Load**: Inserción en DW con manejo de claves sustitutas
+- Scripts modulares y reutilizables
+- Poblado inicial (`seed_dw.py`)
+- Generación masiva de datos (`seed_dw_masivo.py`)
+
+#### ✔ Visualización Analítica
+- Interfaz web integrada en `/cubo`
+- Tablas dinámicas por operación OLAP
+- Filtros independientes por consulta
+- Resultados en tiempo real desde PostgreSQL
+- Diseño responsivo con Bootstrap
+
+---
+
+### Seguridad Implementada
+
+#### 🛡️ Prevención de Inyección SQL
+```python
+# ❌ NUNCA (vulnerable)
+query = f"SELECT * FROM jugador WHERE correo = '{correo}'"
+
+# ✅ SIEMPRE (seguro con ORM)
+jugador = Jugador.query.filter_by(correo_electronico=correo).first()
 ```
-https://videojuegobd.onrender.com/test-db
-```
 
-Respuesta esperada:
-```json
-{
-  "status": "ok",
-  "database": "connected"
+#### 🔐 Sistema de Contraseñas
+- **Hash moderno** con Werkzeug (pbkdf2:sha256)
+- **Migración automática** desde PostgreSQL crypt
+- **Salting automático** en cada hash
+- **Verificación segura** sin exponer contraseñas
+
+#### 🔒 Gestión de Sesiones
+- Cookies firmadas con `SECRET_KEY`
+- Validación en cada ruta protegida
+- Timeout automático
+- Limpieza al cerrar sesión
+
+#### ✅ Pool de Conexiones
+```python
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,      # Detecta conexiones muertas
+    "pool_recycle": 280,        # Recicla cada 280s
 }
 ```
 
----
-## 🪪 12. Licencia
+#### 🔍 Validación de Pertenencia
+```python
+if personaje.id_jugador != session['id_jugador']:
+    return jsonify({"error": "Acción no permitida"}), 403
+```
 
-Este proyecto está desarrollado con fines educativos.  
-Libre para estudiar, modificar y mejorar.
 ---
 
-**¡Gracias por explorar este proyecto! 🎮⚔️🐉**
+## 🎓 13. Metodología de Desarrollo
+
+El proyecto se desarrolló siguiendo una metodología estructurada en **8 fases**, aplicando principios de **Business Intelligence** y **Data Warehousing**.
+
+### Fase 0: Análisis Previo
+**Objetivo:** Definir el alcance analítico del proyecto
+
+**Actividades:**
+- Identificación de preguntas de negocio
+- Definición de objetivos OLTP y OLAP
+- Análisis de requerimientos funcionales
+- Selección de métricas clave (KPIs)
+
+**Entregables:**
+- Documento de análisis
+- Lista de preguntas de negocio
+- Justificación del Data Warehouse
+
+**Preguntas de negocio definidas:**
+1. ¿Qué jugadores avanzan más rápido?
+2. ¿Qué clases son más populares?
+3. ¿Cómo evoluciona el progreso en el tiempo?
+4. ¿Qué eventos generan más experiencia?
+5. ¿Cuáles son los patrones de actividad por periodo?
+
+---
+
+### Fase 1: Identificación de Hechos y Dimensiones
+**Objetivo:** Diseñar el modelo dimensional
+
+**Actividades:**
+- Definición de la tabla de hechos (fact_progreso)
+- Identificación de dimensiones (tiempo, jugador, personaje, evento)
+- Establecimiento de la granularidad (diaria por personaje)
+- Definición de medidas (xp, oro, nivel, duración)
+
+**Decisiones clave:**
+- **Hecho central:** Progreso del jugador
+- **Granularidad:** Un registro por personaje por día
+- **Medidas:** 4 métricas + 1 derivada (count)
+- **Dimensiones:** 4 perspectivas de análisis
+
+---
+
+### Fase 2: Diseño del Esquema Dimensional
+**Objetivo:** Crear el modelo lógico del Data Warehouse
+
+**Actividades:**
+- Elección del esquema estrella (star schema)
+- Diseño de diagramas conceptual, lógico y físico
+- Definición de claves sustitutas (surrogate keys)
+- Establecimiento de jerarquías temporales
+
+**Entregables:**
+- Diagrama del esquema estrella
+- Diccionario de datos
+- Modelo lógico con relaciones
+- Visualización en `diagrama_estrella.html`
+
+---
+
+### Fase 3: Diseño Físico del Data Warehouse
+**Objetivo:** Implementar el DW en PostgreSQL
+
+**Actividades:**
+- Creación del esquema `dw` separado del OLTP
+- Implementación de tablas de dimensiones
+- Creación de la tabla de hechos
+- Definición de índices para optimización
+- Configuración de restricciones y validaciones
+
+**Scripts SQL:**
+```sql
+-- Crear esquema
+CREATE SCHEMA IF NOT EXISTS dw;
+
+-- Crear dimensiones
+CREATE TABLE dw.dim_tiempo (...);
+CREATE TABLE dw.dim_jugador (...);
+CREATE TABLE dw.dim_personaje (...);
+CREATE TABLE dw.dim_evento (...);
+
+-- Crear tabla de hechos
+CREATE TABLE dw.fact_progreso (...);
+
+-- Crear índices
+CREATE INDEX idx_fact_jugador ON dw.fact_progreso(id_jugador_sk);
+```
+
+---
+
+### Fase 4: Proceso ETL
+**Objetivo:** Migrar datos de OLTP a OLAP
+
+**Actividades:**
+- **Extract:** Extracción desde sistema transaccional
+- **Transform:** Limpieza, validación y normalización
+- **Load:** Carga en DW con claves sustitutas
+
+**Scripts implementados:**
+- `etl/extract.py` - Extracción de datos
+- `etl/transform.py` - Transformación y limpieza
+- `etl/load_dimensions.py` - Carga de dimensiones
+- `etl/load_fact.py` - Carga de tabla de hechos
+- `etl/seed_dw.py` - Poblado inicial
+- `etl/seed_dw_masivo.py` - Generación de datos masivos
+
+**Pipeline ETL:**
+```python
+# 1. Extraer
+jugadores = extraer_jugadores()
+personajes = extraer_personajes()
+
+# 2. Transformar
+dim_jugador = transformar_jugadores(jugadores)
+dim_personaje = transformar_personajes(personajes)
+
+# 3. Cargar
+cargar_dim_jugador(dim_jugador)
+cargar_dim_personaje(dim_personaje)
+cargar_fact_progreso()
+```
+
+---
+
+### Fase 5: Implementación del Cubo de Datos
+**Objetivo:** Crear el cubo OLAP funcional
+
+**Actividades:**
+
+#### 5.1 Definición del Cubo
+- Nombre: Cubo de Progreso del Jugador
+- Medidas: xp_ganada, oro_ganado, nivel_resultante, duracion_evento
+- Dimensiones: tiempo, jugador, personaje, evento
+- Jerarquías: día → mes → trimestre → año
+
+#### 5.2 Consultas OLAP
+Implementación de las 4 operaciones fundamentales:
+
+**Roll-up:**
+```sql
+SELECT t.anio, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+GROUP BY t.anio;
+```
+
+**Drill-down:**
+```sql
+SELECT t.fecha, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+WHERE t.anio = 2025 AND t.mes = 1
+GROUP BY t.fecha;
+```
+
+**Slice:**
+```sql
+SELECT t.mes, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+WHERE t.anio = 2025
+GROUP BY t.mes;
+```
+
+**Dice:**
+```sql
+SELECT p.clase, e.tipo_evento, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
+JOIN dw.dim_evento e ON f.id_evento_sk = e.id_evento_sk
+WHERE t.anio = 2025
+GROUP BY p.clase, e.tipo_evento;
+```
+
+---
+
+### Fase 6: Validación y Pruebas
+**Objetivo:** Verificar la integridad del sistema
+
+**Actividades:**
+- Validación de carga de datos (consistencia OLTP ↔ DW)
+- Pruebas de consultas OLAP
+- Verificación de índices y rendimiento
+- Testing de operaciones CRUD en OLTP
+- Validación de seguridad y autenticación
+
+**Casos de prueba:**
+- ✅ Migración de contraseñas
+- ✅ Integridad referencial
+- ✅ Operaciones OLAP
+- ✅ Carga de dimensiones
+- ✅ Poblado de tabla de hechos
+
+---
+
+### Fase 7: Documentación
+**Objetivo:** Generar documentación técnica completa
+
+**Entregables:**
+- README.md completo
+- Diagramas del modelo relacional
+- Diagrama del esquema estrella
+- Diccionario de datos
+- Manual de instalación
+- Guía de uso del cubo OLAP
+- Comentarios en código
+
+---
+
+### Fase 8: Despliegue
+**Objetivo:** Publicar el sistema en producción
+
+**Actividades:**
+- Dockerización del proyecto
+- Configuración en Render.com
+- Configuración de base de datos en Supabase
+- Configuración de variables de entorno
+- Implementación de CI/CD con GitHub
+- Monitoreo y logging
+
+**Resultado:**
+- ✅ Aplicación desplegada en: `https://videojuegobd.onrender.com`
+- ✅ Base de datos en Supabase
+- ✅ Deploy automático con cada push
+- ✅ SSL/TLS habilitado
+
+---
+
+## 📊 Resultados del Proyecto
+
+### Métricas del Sistema
+
+| Métrica | Valor |
+|---------|-------|
+| **Tablas OLTP** | 11 tablas |
+| **Tablas DW** | 5 tablas (4 dims + 1 fact) |
+| **Rutas Flask** | 25+ endpoints |
+| **Operaciones OLAP** | 4 implementadas |
+| **Scripts ETL** | 6 scripts Python |
+| **Líneas de código** | ~2,500 líneas |
+| **Tecnologías** | 12 tecnologías |
+
+### Capacidades Analíticas
+
+- ✅ Análisis temporal (2022-2026)
+- ✅ Análisis por jugador
+- ✅ Análisis por clase de personaje
+- ✅ Análisis por tipo de evento
+- ✅ Agregaciones dinámicas
+- ✅ Filtrado multidimensional
+
+---
+
+## 🎯 Conclusiones
+
+Este proyecto representa una **solución integral** que combina:
+
+1. **Sistema Transaccional (OLTP)** robusto y seguro
+2. **Data Warehouse (OLAP)** con modelo dimensional bien diseñado
+3. **Cubo de Datos** funcional con operaciones analíticas
+4. **Proceso ETL** automatizado y escalable
+5. **Interfaz web** integrada para análisis BI
+
+### Logros Principales
+
+✅ **Separación OLTP/OLAP** - Arquitectura de dos capas
+✅ **Modelo Dimensional** - Esquema estrella optimizado
+✅ **Operaciones OLAP** - Roll-up, Drill-down, Slice, Dice
+✅ **ETL Completo** - Pipeline automatizado
+✅ **Seguridad** - Encriptación, ORM, validaciones
+✅ **Escalabilidad** - Docker, Supabase, Render
+✅ **Documentación** - Completa y detallada
+
+### Aprendizajes
+
+- Diseño de bases de datos relacionales
+- Modelado dimensional y esquemas estrella
+- Implementación de procesos ETL
+- Desarrollo de cubos OLAP
+- Integración OLTP-OLAP en una aplicación real
+- Despliegue de aplicaciones en la nube
+- Buenas prácticas de seguridad en aplicaciones web
+
+---
+
+## 📚 Referencias
+
+- **SQLAlchemy Documentation**: https://docs.sqlalchemy.org/
+- **Flask Documentation**: https://flask.palletsprojects.com/
+- **PostgreSQL Documentation**: https://www.postgresql.org/docs/
+- **Data Warehousing Concepts**: Kimball, Ralph. *The Data Warehouse Toolkit*
+- **OLAP Operations**: Microsoft SQL Server Analysis Services Documentation
+- **Star Schema Design**: https://www.kimballgroup.com/
+
+---
+
+## 👥 Contribuciones
+
+Este proyecto fue desarrollado como parte de un proyecto académico de **Bases de Datos**.
+
+### Autores
+- **Equipo de Desarrollo**
+- Rodriguez Salcedo Liam Ariel
+- Sanches Zenteno Diego
+
+### Repositorio
+- GitHub: https://github.com/IISGRI/Proyecto-BD
+
+---
+
+## 🪪 14. Licencia
+
+Este proyecto está desarrollado con **fines educativos**.
+
+- ✅ Libre para estudiar y aprender
+- ✅ Libre para modificar y extender
+- ✅ Libre para usar como referencia académica
+
+---
+
+## 🎮 Notas Finales
+
+Este proyecto demuestra la integración exitosa de:
+- Bases de datos relacionales (OLTP)
+- Business Intelligence (OLAP)
+- Data Warehousing
+- Proceso ETL
+- Análisis multidimensional
+- Desarrollo web Full-Stack
+
+Representa una solución **completa y profesional** aplicable a escenarios reales de la industria del software y análisis de datos.
+
+**¡Gracias por explorar este proyecto! 🎮⚔️🐉📊**
+
+---
+
+*Última actualización: Enero 2026*
