@@ -1,131 +1,216 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Cubo de Datos - Videojuego</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icons/iconoSF.png') }}">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Cubo OLAP</title>
 
-  <style>
-    body {
-      background-color: #1e1e1e;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
+<style>
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1e1e2f;
+    color: #f1f1f1;
+    margin: 0;
+    padding: 30px;
+}
+.btn-volver {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 8px 14px;
+    background: #3a3a55;
+    color: #ffd369;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
 
-    header {
-      background-color: #111;
-      padding: 20px;
-      text-align: center;
-      font-size: 1.6em;
-      font-weight: bold;
-    }
+.btn-volver:hover {
+    background: #4b4b6d;
+    transform: translateX(-3px);
+}
 
-    main {
-      padding: 30px;
-      max-width: 1000px;
-      margin: auto;
-    }
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
-    h2 {
-      margin-top: 50px;
-      color: #4fc3f7;
-    }
+h2 {
+    margin-top: 0;
+    color: #ffd369;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
+.card {
+    background: #2a2a3d;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 35px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
 
-    th, td {
-      border: 1px solid #444;
-      padding: 10px;
-      text-align: center;
-    }
+form {
+    margin-bottom: 15px;
+}
 
-    th {
-      background-color: #2c3e50;
-    }
+label {
+    margin-right: 5px;
+}
 
-    tr:nth-child(even) {
-      background-color: #2a2a2a;
-    }
+input, select, button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    margin-right: 8px;
+}
 
-    .info {
-      margin-top: 10px;
-      font-size: 0.9em;
-      color: #ccc;
-    }
+button {
+    background: #ffd369;
+    color: #1e1e2f;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-    .btn-volver {
-      display: inline-block;
-      margin: 40px 0;
-      padding: 10px 20px;
-      background-color: #3498db;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-    }
+button:hover {
+    background: #ffbe33;
+}
 
-    .btn-volver:hover {
-      background-color: #2980b9;
-    }
-  </style>
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background: #3a3a55;
+}
+
+tr:nth-child(even) {
+    background: #252538;
+}
+
+tr:hover {
+    background: #34345a;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #aaa;
+    font-size: 0.9em;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  📊 Cubo de Datos – Progreso del Videojuego
-</header>
-
-<main>
+<a href="{{ url_for('lobby') }}" class="btn-volver">⬅ Volver al Lobby</a>
+<h1>📊 Cubo de Datos OLAP</h1>
 
 <!-- ================= ROLL-UP ================= -->
-<h2>ROLL-UP — XP por Año y Mes</h2>
+<div class="card">
+<h2>🔼 Roll-Up (Año → Mes)</h2>
+
+<form method="get">
+    <label>Año:</label>
+    <input type="number" name="rollup_anio" value="{{ rollup_anio or '' }}">
+    <button>Filtrar</button>
+</form>
+
 <table>
-  <tr><th>Año</th><th>Mes</th><th>XP Total</th></tr>
-  {% for f in rollup %}
-  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td><td>{{ f[2] }}</td></tr>
-  {% endfor %}
+<tr><th>Año</th><th>Mes</th><th>XP Total</th></tr>
+{% for r in rollup %}
+<tr>
+    <td>{{ r.anio }}</td>
+    <td>{{ r.mes }}</td>
+    <td>{{ r.xp_total }}</td>
+</tr>
+{% endfor %}
 </table>
-<div class="info">Jerarquía: Año → Mes</div>
+</div>
 
 <!-- ================= SLICE ================= -->
-<h2>SLICE — XP por Mes (Año 2025)</h2>
+<div class="card">
+<h2>🔪 Slice (XP por Mes)</h2>
+
+<form method="get">
+    <label>Año:</label>
+    <input type="number" name="slice_anio" value="{{ slice_anio }}">
+    <button>Filtrar</button>
+</form>
+
 <table>
-  <tr><th>Mes</th><th>XP Total</th></tr>
-  {% for f in slice %}
-  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td></tr>
-  {% endfor %}
+<tr><th>Mes</th><th>XP Total</th></tr>
+{% for s in slice %}
+<tr>
+    <td>{{ s.mes }}</td>
+    <td>{{ s.xp_total }}</td>
+</tr>
+{% endfor %}
 </table>
-<div class="info">Filtro: Año = 2025</div>
+</div>
 
 <!-- ================= DICE ================= -->
-<h2>DICE — XP por Clase (Año 2025)</h2>
+<div class="card">
+<h2>🎲 Dice (XP por Clase)</h2>
+
+<form method="get">
+    <label>Año:</label>
+    <input type="number" name="dice_anio" value="{{ dice_anio }}">
+    <label>Clase:</label>
+    <select name="dice_clase">
+        <option value="">Todas</option>
+        <option value="Guerrero" {% if dice_clase=='Guerrero' %}selected{% endif %}>Guerrero</option>
+        <option value="Mago" {% if dice_clase=='Mago' %}selected{% endif %}>Mago</option>
+        <option value="Arquero" {% if dice_clase=='Arquero' %}selected{% endif %}>Arquero</option>
+    </select>
+    <button>Filtrar</button>
+</form>
+
 <table>
-  <tr><th>Clase</th><th>Año</th><th>XP Total</th></tr>
-  {% for f in dice %}
-  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td><td>{{ f[2] }}</td></tr>
-  {% endfor %}
+<tr><th>Clase</th><th>XP Total</th></tr>
+{% for d in dice %}
+<tr>
+    <td>{{ d.clase }}</td>
+    <td>{{ d.xp_total }}</td>
+</tr>
+{% endfor %}
 </table>
-<div class="info">Dimensiones: Clase + Tiempo</div>
+</div>
 
-<!-- ================= DRILL-DOWN ================= -->
-<h2>DRILL-DOWN — XP por Día (Mayo 2025)</h2>
+<!-- ================= DRILL DOWN ================= -->
+<div class="card">
+<h2>🔽 Drill-Down (XP Diario)</h2>
+
+<form method="get">
+    <label>Año:</label>
+    <input type="number" name="drill_anio" value="{{ drill_anio }}">
+    <label>Mes:</label>
+    <input type="number" min="1" max="12" name="drill_mes" value="{{ drill_mes or '' }}">
+    <button>Filtrar</button>
+</form>
+
+{% if drilldown %}
 <table>
-  <tr><th>Fecha</th><th>XP Total</th></tr>
-  {% for f in drilldown %}
-  <tr><td>{{ f[0] }}</td><td>{{ f[1] }}</td></tr>
-  {% endfor %}
+<tr><th>Fecha</th><th>XP Total</th></tr>
+{% for d in drilldown %}
+<tr>
+    <td>{{ d.fecha }}</td>
+    <td>{{ d.xp_total }}</td>
+</tr>
+{% endfor %}
 </table>
-<div class="info">Detalle: Mes → Día</div>
+{% else %}
+<p style="color:#aaa;">Selecciona año y mes para ver el detalle diario.</p>
+{% endif %}
+</div>
 
-<a href="{{ url_for('lobby') }}" class="btn-volver">⬅ Volver al Lobby</a>
+<div class="footer">
+    Proyecto Data Warehouse & OLAP – Videojuego 🎮
+</div>
 
-</main>
 </body>
 </html>

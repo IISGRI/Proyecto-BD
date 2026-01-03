@@ -986,78 +986,104 @@ def crear_gremio():
 @app.route('/cubo')
 def cubo():
     if 'id_jugador' not in session:
-        flash("Debes iniciar sesión para ver el cubo de datos", "warning")
+        flash("Debes iniciar sesión para ver el cubo", "warning")
         return redirect(url_for('login'))
+
+    # ============================
+    # 🔹 FILTROS INDIVIDUALES
+    # ============================
+    rollup_anio = request.args.get('rollup_anio', None, type=int)
+
+    slice_anio = request.args.get('slice_anio', 2025, type=int)
+
+    dice_anio = request.args.get('dice_anio', 2025, type=int)
+    dice_clase = request.args.get('dice_clase', None)
+
+    drill_anio = request.args.get('drill_anio', 2025, type=int)
+    drill_mes = request.args.get('drill_mes', None, type=int)
 
     try:
         # ============================
-        # 🔹 ROLL-UP: XP por Año y Mes
+        # 🔼 ROLL-UP
         # ============================
-        rollup = db.session.execute(text("""
-            SELECT
-                t.anio,
-                t.mes,
-                SUM(f.xp_ganada) AS xp_total
+        rollup_sql = """
+            SELECT t.anio, t.mes, SUM(f.xp_ganada) AS xp_total
             FROM dw.fact_progreso f
             JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-            GROUP BY t.anio, t.mes
-            ORDER BY t.anio, t.mes;
-        """)).fetchall()
+        """
+        params = {}
+
+        if rollup_anio:
+            rollup_sql += " WHERE t.anio = :anio"
+            params["anio"] = rollup_anio
+
+        rollup_sql += " GROUP BY t.anio, t.mes ORDER BY t.anio, t.mes"
+
+        rollup = db.session.execute(text(rollup_sql), params).fetchall()
 
         # ============================
-        # 🔹 SLICE: XP por Mes (Año fijo)
+        # 🔪 SLICE
         # ============================
         slice_ = db.session.execute(text("""
-            SELECT
-                t.mes,
-                SUM(f.xp_ganada) AS xp_total
+            SELECT t.mes, SUM(f.xp_ganada) AS xp_total
             FROM dw.fact_progreso f
             JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-            WHERE t.anio = 2025
+            WHERE t.anio = :anio
             GROUP BY t.mes
-            ORDER BY t.mes;
-        """)).fetchall()
+            ORDER BY t.mes
+        """), {"anio": slice_anio}).fetchall()
 
         # ============================
-        # 🔹 DICE: XP por Clase y Año
+        # 🎲 DICE
         # ============================
         dice = db.session.execute(text("""
-            SELECT
-                p.clase,
-                t.anio,
-                SUM(f.xp_ganada) AS xp_total
+            SELECT p.clase, SUM(f.xp_ganada) AS xp_total
             FROM dw.fact_progreso f
             JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
             JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-            WHERE t.anio = 2025
-            GROUP BY p.clase, t.anio
-            ORDER BY p.clase;
-        """)).fetchall()
+            WHERE t.anio = :anio
+            AND (:clase IS NULL OR p.clase = :clase)
+            GROUP BY p.clase
+            ORDER BY p.clase
+        """), {
+            "anio": dice_anio,
+            "clase": dice_clase
+        }).fetchall()
 
         # ============================
-        # 🔹 DRILL-DOWN: XP por Día
+        # 🔽 DRILL-DOWN
         # ============================
-        drilldown = db.session.execute(text("""
-            SELECT
-                t.fecha,
-                SUM(f.xp_ganada) AS xp_total
-            FROM dw.fact_progreso f
-            JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-            WHERE t.anio = 2025 AND t.mes = 5
-            GROUP BY t.fecha
-            ORDER BY t.fecha;
-        """)).fetchall()
+        drilldown = []
+        if drill_mes:
+            drilldown = db.session.execute(text("""
+                SELECT t.fecha, SUM(f.xp_ganada) AS xp_total
+                FROM dw.fact_progreso f
+                JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+                WHERE t.anio = :anio
+                AND t.mes = :mes
+                GROUP BY t.fecha
+                ORDER BY t.fecha
+            """), {
+                "anio": drill_anio,
+                "mes": drill_mes
+            }).fetchall()
 
         return render_template(
             "cubo.html",
             rollup=rollup,
             slice=slice_,
             dice=dice,
-            drilldown=drilldown
+            drilldown=drilldown,
+            rollup_anio=rollup_anio,
+            slice_anio=slice_anio,
+            dice_anio=dice_anio,
+            dice_clase=dice_clase,
+            drill_anio=drill_anio,
+            drill_mes=drill_mes
         )
 
     except Exception as e:
-        return f"❌ Error al consultar el cubo: {e}"
+        return f"❌ Error OLAP: {e}"
 
 #MARK: PRUEBAS
 @app.route('/test-db')
