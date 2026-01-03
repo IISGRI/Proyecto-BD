@@ -1,0 +1,97 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1e1e2f;
+    color: #f1f1f1;
+    margin: 0;
+    padding: 30px;
+}
+.btn-volver {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 8px 14px;
+    background: #3a3a55;
+    color: #ffd369;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-volver:hover {
+    background: #4b4b6d;
+    transform: translateX(-3px);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h2 {
+    margin-top: 0;
+    color: #ffd369;
+}
+
+.card {
+    background: #2a2a3d;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 35px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+form {
+    margin-bottom: 15px;
+}
+
+label {
+    margin-right: 5px;
+}
+
+input, select, button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    margin-right: 8px;
+}
+
+button {
+    background: #ffd369;
+    color: #1e1e2f;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ffbe33;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background: #3a3a55;
+}
+
+tr:nth-child(even) {
+    background: #252538;
+}
+
+tr:hover {
+    background: #34345a;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #aaa;
+    font-size: 0.9em;
+}
