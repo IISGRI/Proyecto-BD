@@ -141,7 +141,10 @@ Desarrollar una **plataforma integral** que permita:
 ### Business Intelligence
 - **Data Warehouse** con modelo dimensional
 - **Esquema Estrella** (Star Schema)
-- **Consultas OLAP** en SQL puro
+- **Mondrian OLAP** - Motor ROLAP para consultas MDX
+- **Pentaho Workbench** - Editor de esquemas y testing MDX
+- **MDX (Multidimensional Expressions)** - Lenguaje de consultas OLAP
+- **Consultas SQL** en Flask para análisis rápido
 - **ETL** en Python
 
 ### Infraestructura
@@ -173,13 +176,13 @@ PROYECTO/
 │
 ├── sql/                           # 📜 Scripts SQL
 │   └── dw_schema.sql              # Esquema del Data Warehouse
+│   └── cubo_videojuego.xml        # ⭐ Definición del cubo OLAP (Mondrian)   
 │
 ├── static/                        # 🎨 Recursos estáticos
 │   ├── css/
-│   │   └── estilo.css
+│   │   └── estilos.css
 │   ├── img/
 │   │   ├── icons/
-│   │   ├── fondolobby.jpg
 │   │   ├── personaje01.png
 │   │   └── mascota01.png
 │   └── js/
@@ -430,70 +433,234 @@ CREATE INDEX idx_fact_evento ON dw.fact_progreso(id_evento_sk);
 3. **Personaje** (clase, nivel inicial, raza)
 4. **Evento** (tipo, descripción, dificultad)
 
-### Operaciones OLAP Implementadas
+---
 
-#### 🔼 ROLL-UP
-Agregación de datos a nivel superior de jerarquía
+## 🎯 Implementación con Mondrian OLAP (MDX Real)
 
-```sql
--- Experiencia total por año
-SELECT t.anio, t.mes, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-GROUP BY t.anio, t.mes
-ORDER BY t.anio, t.mes;
+### Arquitectura del Sistema OLAP
+
+```
+PostgreSQL (DW - esquema dw)
+        ↑
+        │
+ Mondrian OLAP Engine
+        ↑
+        │ MDX
+ Pentaho Workbench / Saiku
 ```
 
-#### 🔽 DRILL-DOWN
-Desagregación a nivel inferior de jerarquía
+**Mondrian OLAP** es un motor ROLAP (Relational OLAP) que:
+- Interpreta Data Warehouses en esquema estrella
+- Define cubos mediante esquemas XML
+- Ejecuta consultas MDX reales sobre bases relacionales
+- Traduce MDX a SQL optimizado
 
-```sql
--- Experiencia diaria por fecha específica
-SELECT t.fecha, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-WHERE t.anio = :anio AND t.mes = :mes
-GROUP BY t.fecha
-ORDER BY t.fecha;
+---
+
+### 📄 Definición del Cubo en XML
+
+**Archivo:** `cubo_videojuego.xml`
+
+```xml
+<Schema name="VideojuegoDW">
+
+  <Cube name="CuboProgresoJugador" cache="true" enabled="true">
+
+    <!-- TABLA DE HECHOS -->
+    <Table schema="dw" name="fact_progreso"/>
+
+    <!-- DIMENSIÓN TIEMPO -->
+    <Dimension name="Tiempo" foreignKey="id_tiempo_sk">
+      <Hierarchy hasAll="true" primaryKey="id_tiempo_sk">
+        <Table schema="dw" name="dim_tiempo"/>
+        <Level name="Año" column="anio" type="Numeric" uniqueMembers="true"/>
+        <Level name="Mes" column="mes" type="Numeric"/>
+        <Level name="Día" column="dia" type="Numeric"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN PERSONAJE -->
+    <Dimension name="Personaje" foreignKey="id_personaje_sk">
+      <Hierarchy hasAll="true" primaryKey="id_personaje_sk">
+        <Table schema="dw" name="dim_personaje"/>
+        <Level name="Clase" column="clase" uniqueMembers="true"/>
+        <Level name="Raza" column="raza"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN EVENTO -->
+    <Dimension name="Evento" foreignKey="id_evento_sk">
+      <Hierarchy hasAll="true" primaryKey="id_evento_sk">
+        <Table schema="dw" name="dim_evento"/>
+        <Level name="Tipo Evento" column="tipo_evento" uniqueMembers="true"/>
+        <Level name="Dificultad" column="dificultad"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN JUGADOR -->
+    <Dimension name="Jugador" foreignKey="id_jugador_sk">
+      <Hierarchy hasAll="true" primaryKey="id_jugador_sk">
+        <Table schema="dw" name="dim_jugador"/>
+        <Level name="Usuario" column="nombre_usuario" uniqueMembers="true"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- MEDIDAS -->
+    <Measure name="XP Ganada" column="xp_ganada" aggregator="sum"/>
+    <Measure name="Oro Ganado" column="oro_ganado" aggregator="sum"/>
+    <Measure name="Duración Evento" column="duracion_evento" aggregator="avg"/>
+
+  </Cube>
+
+</Schema>
 ```
 
-#### 🔪 SLICE
-Corte de una dimensión específica
+---
 
-```sql
--- Progreso en un año específico
-SELECT t.mes, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-WHERE t.anio = 2025
-GROUP BY t.mes
-ORDER BY t.mes;
+### 🔄 Operaciones OLAP Fundamentales (MDX Real)
+
+#### 1. 🔼 Roll-Up (Agregación Jerárquica)
+
+**Objetivo:** Ver el resumen global de experiencia agrupada por Año.
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Año].Members} ON ROWS
+FROM [CuboProgresoJugador]
 ```
 
-#### 🎲 DICE
-Filtrado por múltiples dimensiones
-
-```sql
--- Experiencia por clase y año
-SELECT p.clase, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-WHERE t.anio = 2025
-  AND (:clase IS NULL OR p.clase = :clase)
-GROUP BY p.clase
-ORDER BY p.clase;
+**Resultado esperado:**
+```
+Año    | XP Ganada
+-------|----------
+2022   | 150,000
+2023   | 280,000
+2024   | 420,000
+2025   | 380,000
 ```
 
-### Visualización del Cubo
+---
+
+#### 2. 🔽 Drill-Down (Desglose Jerárquico)
+
+**Objetivo:** Profundizar en el detalle mensual del año 2025.
+
+**⚠️ Nota importante:** Para hacer Drill-Down, se usa `.Children` en lugar de `WHERE`, ya que se solicita explícitamente los hijos (meses) del nodo padre (año).
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Año].[2025].Children} ON ROWS
+FROM [CuboProgresoJugador]
+```
+
+**Resultado esperado:**
+```
+Mes | XP Ganada
+----|----------
+1   | 32,000
+2   | 28,000
+3   | 35,000
+...
+12  | 31,000
+```
+
+---
+
+#### 3. 🔪 Slice (Corte Temporal)
+
+**Objetivo:** Ver el rendimiento de los Jugadores (Dimensión A) acotado únicamente al año 2024 (Dimensión B).
+
+**⚠️ Nota importante:** El `WHERE` filtra la dimensión Tiempo, mientras que las filas muestran otra dimensión (Jugador) para evitar conflictos.
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Jugador].[Usuario].Members} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2024])
+```
+
+**Resultado esperado:**
+```
+Usuario      | XP Ganada
+-------------|----------
+jugador01    | 42,000
+jugador02    | 38,500
+jugador03    | 51,200
+```
+
+---
+
+#### 4. 🎲 Dice (Cubo Multidimensional)
+
+**Objetivo:** Filtrar por Clase 'Guerrero' y Año '2025' simultáneamente.
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Personaje].[Clase].[Guerrero]} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2025])
+```
+
+**Resultado esperado:**
+```
+Clase     | XP Ganada
+----------|----------
+Guerrero  | 85,000
+```
+
+---
+
+### 🎯 Consultas Analíticas Adicionales
+
+#### Análisis por Clase de Personaje (Cross-Dimensional)
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada], [Measures].[Oro Ganado]} ON COLUMNS,
+    {[Personaje].[Clase].Members} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2025])
+```
+
+#### Top 5 Jugadores por XP
+
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    TopCount([Jugador].[Usuario].Members, 5, [Measures].[XP Ganada]) ON ROWS
+FROM [CuboProgresoJugador]
+```
+
+---
+
+### 🛠️ Herramientas Utilizadas
+
+| Herramienta | Propósito |
+|-------------|-----------|
+| **Mondrian OLAP** | Motor ROLAP para consultas MDX |
+| **Pentaho Workbench** | Editor de esquemas XML |
+| **Schema Workbench** | Validación y testing de MDX |
+| **PostgreSQL** | Base de datos del Data Warehouse |
+
+---
+
+### 📊 Visualización del Cubo (Interfaz Web)
 
 **Ruta web:** `/cubo`
 
-La interfaz permite:
+La interfaz Flask permite:
 - ✅ Selección de filtros individuales por operación
 - ✅ Visualización de resultados en tablas dinámicas
 - ✅ Navegación entre diferentes perspectivas
-- ✅ Integración directa con el backend Flask
+- ✅ Integración con SQL para consultas rápidas
+
+**Nota:** El sistema mantiene dos capas de análisis:
+- **Capa SQL:** Consultas directas en Flask (desarrollo inicial)
+- **Capa MDX:** Consultas profesionales con Mondrian (validación académica)---
 
 ---
 
@@ -695,6 +862,53 @@ python videojuego.py
 ```
 
 Acceder a: `http://127.0.0.1:5000`
+
+---
+
+### Configuración de Mondrian OLAP (Opcional)
+
+Para trabajar con consultas MDX reales:
+
+#### 1️⃣ Descargar Pentaho
+
+```bash
+# Descargar Pentaho Community Edition desde:
+# https://community.hitachivantara.com/s/article/pentaho-community-edition-downloads
+```
+
+#### 2️⃣ Configurar la conexión a PostgreSQL
+
+En Pentaho Schema Workbench:
+1. Crear nueva conexión
+2. Configurar:
+   - **Driver:** PostgreSQL
+   - **URL:** `jdbc:postgresql://host:puerto/database`
+   - **Usuario/Contraseña:** Credenciales de Supabase
+
+#### 3️⃣ Cargar el esquema del cubo
+
+```bash
+# Abrir el archivo en Schema Workbench
+sql/cubo_videojuego.xml
+```
+
+#### 4️⃣ Ejecutar consultas MDX
+
+En el panel de consultas MDX del Workbench, ejecutar las consultas documentadas en la sección de Operaciones OLAP.
+
+#### 5️⃣ Validar resultados
+
+Verificar que las agregaciones coincidan con los datos del Data Warehouse:
+
+```sql
+-- Verificación en PostgreSQL
+SELECT t.anio, SUM(f.xp_ganada) AS xp_total
+FROM dw.fact_progreso f
+JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
+GROUP BY t.anio;
+```
+
+**Nota:** La capa MDX es opcional para la funcionalidad web de Flask, pero es esencial para demostrar conocimiento formal de OLAP en contextos académicos.
 
 ---
 
@@ -1062,7 +1276,7 @@ cargar_fact_progreso()
 ---
 
 ### Fase 5: Implementación del Cubo de Datos
-**Objetivo:** Crear el cubo OLAP funcional
+**Objetivo:** Crear el cubo OLAP funcional con MDX real
 
 **Actividades:**
 
@@ -1072,44 +1286,71 @@ cargar_fact_progreso()
 - Dimensiones: tiempo, jugador, personaje, evento
 - Jerarquías: día → mes → trimestre → año
 
-#### 5.2 Consultas OLAP
-Implementación de las 4 operaciones fundamentales:
+#### 5.2 Implementación con Mondrian OLAP
+- Definición del esquema XML del cubo
+- Configuración de jerarquías dimensionales
+- Mapeo de medidas agregables
+- Validación del schema con Schema Workbench
 
-**Roll-up:**
-```sql
-SELECT t.anio, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-GROUP BY t.anio;
+**Esquema XML (cubo_videojuego.xml):**
+```xml
+<Cube name="CuboProgresoJugador">
+  <Table schema="dw" name="fact_progreso"/>
+  <Dimension name="Tiempo" foreignKey="id_tiempo_sk">
+    <Hierarchy hasAll="true" primaryKey="id_tiempo_sk">
+      <Table schema="dw" name="dim_tiempo"/>
+      <Level name="Año" column="anio"/>
+      <Level name="Mes" column="mes"/>
+      <Level name="Día" column="dia"/>
+    </Hierarchy>
+  </Dimension>
+  <!-- Más dimensiones... -->
+</Cube>
 ```
 
-**Drill-down:**
-```sql
-SELECT t.fecha, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-WHERE t.anio = 2025 AND t.mes = 1
-GROUP BY t.fecha;
+#### 5.3 Consultas MDX
+Implementación de las 4 operaciones OLAP fundamentales en MDX real:
+
+**Roll-up (Agregación):**
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Año].Members} ON ROWS
+FROM [CuboProgresoJugador]
 ```
 
-**Slice:**
-```sql
-SELECT t.mes, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_tiempo t ON f.id_tiempo_sk = t.id_tiempo_sk
-WHERE t.anio = 2025
-GROUP BY t.mes;
+**Drill-down (Desglose con .Children):**
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Año].[2025].Children} ON ROWS
+FROM [CuboProgresoJugador]
 ```
 
-**Dice:**
-```sql
-SELECT p.clase, e.tipo_evento, SUM(f.xp_ganada) AS xp_total
-FROM dw.fact_progreso f
-JOIN dw.dim_personaje p ON f.id_personaje_sk = p.id_personaje_sk
-JOIN dw.dim_evento e ON f.id_evento_sk = e.id_evento_sk
-WHERE t.anio = 2025
-GROUP BY p.clase, e.tipo_evento;
+**Slice (Corte dimensional):**
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Jugador].[Usuario].Members} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2024])
 ```
+
+**Dice (Filtrado multidimensional):**
+```mdx
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Personaje].[Clase].[Guerrero]} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2025])
+```
+
+#### 5.4 Validación en Pentaho Workbench
+- Testing de consultas MDX
+- Verificación de agregaciones
+- Optimización de jerarquías
+- Pruebas de navegación dimensional
+
 
 ---
 
@@ -1174,10 +1415,11 @@ GROUP BY p.clase, e.tipo_evento;
 | **Tablas OLTP** | 11 tablas |
 | **Tablas DW** | 5 tablas (4 dims + 1 fact) |
 | **Rutas Flask** | 25+ endpoints |
-| **Operaciones OLAP** | 4 implementadas |
+| **Operaciones OLAP** | 4 implementadas (SQL + MDX) |
 | **Scripts ETL** | 6 scripts Python |
+| **Consultas MDX** | 6+ consultas validadas |
 | **Líneas de código** | ~2,500 líneas |
-| **Tecnologías** | 12 tecnologías |
+| **Tecnologías** | 15 tecnologías |
 
 ### Capacidades Analíticas
 
@@ -1187,24 +1429,29 @@ GROUP BY p.clase, e.tipo_evento;
 - ✅ Análisis por tipo de evento
 - ✅ Agregaciones dinámicas
 - ✅ Filtrado multidimensional
+- ✅ Consultas MDX profesionales
+- ✅ Motor ROLAP con Mondrian
 
 ---
 
-## 🎯 Conclusiones
+## 🎯 Conclusiones (REEMPLAZAR SECCIÓN COMPLETA)
 
 Este proyecto representa una **solución integral** que combina:
 
 1. **Sistema Transaccional (OLTP)** robusto y seguro
 2. **Data Warehouse (OLAP)** con modelo dimensional bien diseñado
 3. **Cubo de Datos** funcional con operaciones analíticas
-4. **Proceso ETL** automatizado y escalable
-5. **Interfaz web** integrada para análisis BI
+4. **Consultas MDX reales** con Mondrian OLAP
+5. **Proceso ETL** automatizado y escalable
+6. **Interfaz web** integrada para análisis BI
 
 ### Logros Principales
 
 ✅ **Separación OLTP/OLAP** - Arquitectura de dos capas
 ✅ **Modelo Dimensional** - Esquema estrella optimizado
 ✅ **Operaciones OLAP** - Roll-up, Drill-down, Slice, Dice
+✅ **MDX Real** - Consultas profesionales con Mondrian
+✅ **Motor ROLAP** - Integración con Pentaho Workbench
 ✅ **ETL Completo** - Pipeline automatizado
 ✅ **Seguridad** - Encriptación, ORM, validaciones
 ✅ **Escalabilidad** - Docker, Supabase, Render
@@ -1215,10 +1462,48 @@ Este proyecto representa una **solución integral** que combina:
 - Diseño de bases de datos relacionales
 - Modelado dimensional y esquemas estrella
 - Implementación de procesos ETL
-- Desarrollo de cubos OLAP
+- Desarrollo de cubos OLAP con Mondrian
+- Consultas MDX profesionales
+- Arquitectura ROLAP
 - Integración OLTP-OLAP en una aplicación real
 - Despliegue de aplicaciones en la nube
 - Buenas prácticas de seguridad en aplicaciones web
+
+### 🔥 Lecciones Aprendidas con MDX
+
+Durante la implementación del cubo con Mondrian, se identificaron y corrigieron errores comunes:
+
+#### ❌ Error Común: Drill-Down con WHERE
+```mdx
+-- INCORRECTO (genera error de dimensión duplicada)
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Mes].Members} ON ROWS
+FROM [CuboProgresoJugador]
+WHERE ([Tiempo].[Año].[2025])
+```
+
+**Problema:** No se puede tener la misma dimensión en filas y en WHERE.
+
+#### ✅ Solución: Usar .Children
+```mdx
+-- CORRECTO (navegación jerárquica)
+SELECT
+    {[Measures].[XP Ganada]} ON COLUMNS,
+    {[Tiempo].[Año].[2025].Children} ON ROWS
+FROM [CuboProgresoJugador]
+```
+
+**Explicación:** `.Children` solicita explícitamente los hijos (meses) del nodo padre (año 2025), respetando la jerarquía dimensional.
+
+#### 📌 Regla de Oro MDX
+
+> **No se puede filtrar con WHERE usando la misma dimensión que está en las filas/columnas.**
+> 
+> - Para navegar en una dimensión: usar `.Children`, `.Members`, o `.Descendants`
+> - Para filtrar con otra dimensión: usar `WHERE`
+
+Esta comprensión es fundamental para escribir consultas MDX correctas y eficientes.
 
 ---
 

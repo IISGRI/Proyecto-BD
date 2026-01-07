@@ -1,0 +1,51 @@
+<Schema name="VideojuegoDW">
+
+  <Cube name="CuboProgresoJugador" cache="true" enabled="true">
+
+    <!-- TABLA DE HECHOS -->
+    <Table schema="dw" name="fact_progreso"/>
+
+    <!-- DIMENSIÓN TIEMPO -->
+    <Dimension name="Tiempo" foreignKey="id_tiempo_sk">
+      <Hierarchy hasAll="true" primaryKey="id_tiempo_sk">
+        <Table schema="dw" name="dim_tiempo"/>
+        <Level name="Año" column="anio" type="Numeric" uniqueMembers="true"/>
+        <Level name="Mes" column="mes" type="Numeric"/>
+        <Level name="Día" column="dia" type="Numeric"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN PERSONAJE -->
+    <Dimension name="Personaje" foreignKey="id_personaje_sk">
+      <Hierarchy hasAll="true" primaryKey="id_personaje_sk">
+        <Table schema="dw" name="dim_personaje"/>
+        <Level name="Clase" column="clase" uniqueMembers="true"/>
+        <Level name="Raza" column="raza"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN EVENTO -->
+    <Dimension name="Evento" foreignKey="id_evento_sk">
+      <Hierarchy hasAll="true" primaryKey="id_evento_sk">
+        <Table schema="dw" name="dim_evento"/>
+        <Level name="Tipo Evento" column="tipo_evento" uniqueMembers="true"/>
+        <Level name="Dificultad" column="dificultad"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- DIMENSIÓN JUGADOR -->
+    <Dimension name="Jugador" foreignKey="id_jugador_sk">
+      <Hierarchy hasAll="true" primaryKey="id_jugador_sk">
+        <Table schema="dw" name="dim_jugador"/>
+        <Level name="Usuario" column="nombre_usuario" uniqueMembers="true"/>
+      </Hierarchy>
+    </Dimension>
+
+    <!-- MEDIDAS -->
+    <Measure name="XP Ganada" column="xp_ganada" aggregator="sum"/>
+    <Measure name="Oro Ganado" column="oro_ganado" aggregator="sum"/>
+    <Measure name="Duración Evento" column="duracion_evento" aggregator="avg"/>
+
+  </Cube>
+
+</Schema>
