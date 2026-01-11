@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🎮 Sistema de Gestión para Videojuego Medieval
 ## Flask + PostgreSQL + Supabase + Data Warehouse + Cubo OLAP
 
