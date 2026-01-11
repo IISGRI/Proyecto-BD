@@ -165,6 +165,11 @@ Desarrollar una **plataforma integral** que permita:
 
 ```
 PROYECTO/
+|
+├── CuboDeDatos(VisualStudio)/   
+│   ├── 📁 Database/           # Scripts T-SQL de generación de datos
+│   ├── 📁 SSAS_Project/       # Solución completa de Visual Studio
+│   ├── 📁 Excel/         # Reporte final en Excel (.xlsx)
 │
 ├── etl/                           # 🔄 Proceso ETL completo
 │   ├── extract.py                 # Extracción desde OLTP
@@ -210,13 +215,6 @@ PROYECTO/
 ├── docker-compose.yml             # 🐳 Orquestación
 ├── diagrama_estrella.html         # 📊 Visualización del esquema
 └── README.md                      # 📖 Este archivo
-|
-|
-├── CuboDeDatos(VisualStudio)/
-    │
-    ├── 📁 Database/           # Scripts T-SQL de generación de datos
-    ├── 📁 SSAS_Project/       # Solución completa de Visual Studio
-    ├── 📁 Excel/         # Reporte final en Excel (.xlsx)
 ```
 
 ---
