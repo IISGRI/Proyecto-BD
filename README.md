@@ -213,11 +213,11 @@ PROYECTO/
 └── README.md                      # 📖 Este archivo
 |
 |
-CuboDeDatos(VisualStudio)/
-│
-├── 📁 Database/           # Scripts T-SQL de generación de datos
-├── 📁 SSAS_Project/       # Solución completa de Visual Studio
-├── 📁 Excel/         # Reporte final en Excel (.xlsx)
+├── CuboDeDatos(VisualStudio)/
+    │
+    ├── 📁 Database/           # Scripts T-SQL de generación de datos
+    ├── 📁 SSAS_Project/       # Solución completa de Visual Studio
+    ├── 📁 Excel/         # Reporte final en Excel (.xlsx)
 ```
 
 ---
