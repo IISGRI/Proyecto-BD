@@ -211,6 +211,13 @@ PROYECTO/
 ├── docker-compose.yml             # 🐳 Orquestación
 ├── diagrama_estrella.html         # 📊 Visualización del esquema
 └── README.md                      # 📖 Este archivo
+|
+|
+CuboDeDatos(VisualStudio)/
+│
+├── 📁 Database/           # Scripts T-SQL de generación de datos
+├── 📁 SSAS_Project/       # Solución completa de Visual Studio
+├── 📁 Excel/         # Reporte final en Excel (.xlsx)
 ```
 
 ---
@@ -1690,15 +1697,3 @@ Paso 3: Dashboard
 - Migración del Frontend a Power BI para visualizaciones web.
 - Automatización del proceso de carga (ETL) mediante SSIS (Integration Services).
 
-## 📂 Estructura del Repositorio
-Cubo-de-Datos/
-
-│
-
-├── 📁 Database/           # Scripts T-SQL de generación de datos
-
-├── 📁 SSAS_Project/       # Solución completa de Visual Studio
-
-├── 📁 Excel/         # Reporte final en Excel (.xlsx)
-
->>>>>>> mi-trabajo/main
