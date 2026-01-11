@@ -2,7 +2,7 @@ CREATE DATABASE Videojuego_DW;
 GO
 USE Videojuego_DW;
 GO
-
+--
 -- 1. CREACIÓN DE TABLAS (Esquema de Estrella)
 CREATE TABLE dw.dim_tiempo (
     id_tiempo_sk INT IDENTITY(1,1) PRIMARY KEY,
