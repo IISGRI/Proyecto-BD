@@ -1534,6 +1534,8 @@ Este proyecto fue desarrollado como parte de un proyecto académico de **Bases d
 ### Repositorio
 - GitHub: https://github.com/IISGRI/Proyecto-BD
 
+- GitHub Pages (versión estática): https://iisgri.github.io/Proyecto-BD/
+
 ---
 
 ## 🪪 14. Licencia
