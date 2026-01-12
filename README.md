@@ -1563,6 +1563,7 @@ Representa una solución **completa y profesional** aplicable a escenarios reale
 ---
 
 *Última actualización: Enero 2026*
+
 =======
 # ⚔️ Video Game Analytics: Sistema de Inteligencia de Negocios (BI)
 
@@ -1590,6 +1591,7 @@ Este proyecto implementa **dos soluciones completas de Business Intelligence (En
 2. **Enfoque Microsoft (SQL Server + SSAS)**: Solución empresarial utilizando el ecosistema Microsoft, optimizada para análisis corporativos y visualización en Excel.
 
 Ambas implementaciones permiten a los analistas cruzar variables complejas (Tiempo, Geografía, Clase de Personaje) con métricas de rendimiento (XP, Oro) en milisegundos, visualizando los hallazgos en dashboards interactivos.
+
 ---
 
 ## 🎥 Video del procedimiento de los 2 metodos.
