@@ -1,0 +1,158 @@
+﻿<Dimension xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:dwd="http://schemas.microsoft.com/DataWarehouse/Designer/1.0" dwd:design-time-name="b4c4de24-c08a-4903-a063-f36840d02efd" xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+  <ID>Dim Personaje</ID>
+  <Name>Dim Personaje</Name>
+  <CreatedTimestamp>0001-01-01T00:00:00Z</CreatedTimestamp>
+  <LastSchemaUpdate>0001-01-01T00:00:00Z</LastSchemaUpdate>
+  <Annotations>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramLayout</Name>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:ShowFriendlyNames</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:ShowRelationshipNames</Name>
+      <Value>false</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:UseDiagramDefaultLayout</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramViewPortLeft</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramViewPortTop</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramBoundingLeft</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramBoundingTop</Name>
+      <Value>0</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:DiagramZoom</Name>
+      <Value>100</Value>
+    </Annotation>
+  </Annotations>
+  <LastProcessed>0001-01-01T00:00:00Z</LastProcessed>
+  <State>Unprocessed</State>
+  <Source xsi:type="DataSourceViewBinding" dwd:design-time-name="b678f804-def5-4f6c-b088-f01a69d8e009">
+    <DataSourceViewID>Videojuego DW</DataSourceViewID>
+  </Source>
+  <ErrorConfiguration dwd:design-time-name="cab2dc35-3a19-414b-9162-1dfa8f10ffb2">
+    <KeyNotFound>ReportAndStop</KeyNotFound>
+    <KeyDuplicate>ReportAndStop</KeyDuplicate>
+    <NullKeyNotAllowed>ReportAndStop</NullKeyNotAllowed>
+  </ErrorConfiguration>
+  <CurrentStorageMode>Molap</CurrentStorageMode>
+  <Attributes>
+    <Attribute dwd:design-time-name="7363f12f-e064-47ef-927d-6f97dcb6e48d">
+      <ID>Id Personaje Sk</ID>
+      <Name>Id Personaje Sk</Name>
+      <Usage>Key</Usage>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="562beada-73fd-4623-8f7b-ef73824903b7">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="c9fb02f9-7108-4baa-a184-e1ab509c70ad">
+            <TableID>dw_dim_personaje</TableID>
+            <ColumnID>id_personaje_sk</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <AttributeRelationships>
+        <AttributeRelationship dwd:design-time-name="be084d17-0628-457a-abb6-2f17d8ffaea2">
+          <AttributeID>Id Personaje Nk</AttributeID>
+          <Name>Id Personaje Nk</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="4cd26bfe-8c24-4ee1-beb8-b3fb659b618e">
+          <AttributeID>Clase</AttributeID>
+          <Name>Clase</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="50de86cd-bf93-4e0c-9184-aaedb2edff8b">
+          <AttributeID>Nivel Inicial</AttributeID>
+          <Name>Nivel Inicial</Name>
+        </AttributeRelationship>
+        <AttributeRelationship dwd:design-time-name="61c68a0b-185d-4fd4-97a6-6a8346f36734">
+          <AttributeID>Raza</AttributeID>
+          <Name>Raza</Name>
+        </AttributeRelationship>
+      </AttributeRelationships>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="f6c5eadc-dc58-496a-858e-ebad594b5d7a">
+      <ID>Id Personaje Nk</ID>
+      <Name>Id Personaje Nk</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="73196bd5-93fe-4400-a4dd-33cae1e424aa">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="dd2f22c6-d5c4-43ff-bd3d-db89796e0a5f">
+            <TableID>dw_dim_personaje</TableID>
+            <ColumnID>id_personaje_nk</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="c00025b1-5d2f-46d9-84ba-0242b9baf2a7">
+      <ID>Clase</ID>
+      <Name>Clase</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="c7d3f17f-33b5-4956-add9-6d5a90836908">
+          <DataType>WChar</DataType>
+          <DataSize>100</DataSize>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="c0665645-cb48-4b1f-9788-a766b62f2f96">
+            <TableID>dw_dim_personaje</TableID>
+            <ColumnID>clase</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="866998ba-fbee-4d95-b398-6b8a8948e8f7">
+      <ID>Nivel Inicial</ID>
+      <Name>Nivel Inicial</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="6fa264d5-6398-4c0a-87a5-35f77454a8a3">
+          <DataType>Integer</DataType>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="c2295e01-83b4-4c09-81c4-2a5e67121b9f">
+            <TableID>dw_dim_personaje</TableID>
+            <ColumnID>nivel_inicial</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+    <Attribute dwd:design-time-name="ba4a1aa9-fc63-475b-859e-275b7cffeed5">
+      <ID>Raza</ID>
+      <Name>Raza</Name>
+      <KeyColumns>
+        <KeyColumn dwd:design-time-name="31acc872-7126-48a8-bb37-58e9afcc8ec8">
+          <DataType>WChar</DataType>
+          <DataSize>100</DataSize>
+          <Source xsi:type="ColumnBinding" dwd:design-time-name="e317056c-5004-41b4-b9e1-a8830d46be8a">
+            <TableID>dw_dim_personaje</TableID>
+            <ColumnID>raza</ColumnID>
+          </Source>
+        </KeyColumn>
+      </KeyColumns>
+      <OrderBy>Key</OrderBy>
+      <ddl200:ProcessingState>Unprocessed</ddl200:ProcessingState>
+      <ddl300:AttributeHierarchyProcessingState>Unprocessed</ddl300:AttributeHierarchyProcessingState>
+    </Attribute>
+  </Attributes>
+  <ddl300:ProcessingState>Unprocessed</ddl300:ProcessingState>
+</Dimension>

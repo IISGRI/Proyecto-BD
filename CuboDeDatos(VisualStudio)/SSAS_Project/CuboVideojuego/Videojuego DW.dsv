@@ -1,0 +1,192 @@
+﻿<DataSourceView xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddl2="http://schemas.microsoft.com/analysisservices/2003/engine/2" xmlns:ddl2_2="http://schemas.microsoft.com/analysisservices/2003/engine/2/2" xmlns:ddl100_100="http://schemas.microsoft.com/analysisservices/2008/engine/100/100" xmlns:ddl200="http://schemas.microsoft.com/analysisservices/2010/engine/200" xmlns:ddl200_200="http://schemas.microsoft.com/analysisservices/2010/engine/200/200" xmlns:ddl300="http://schemas.microsoft.com/analysisservices/2011/engine/300" xmlns:ddl300_300="http://schemas.microsoft.com/analysisservices/2011/engine/300/300" xmlns:ddl400="http://schemas.microsoft.com/analysisservices/2012/engine/400" xmlns:ddl400_400="http://schemas.microsoft.com/analysisservices/2012/engine/400/400" xmlns:ddl500="http://schemas.microsoft.com/analysisservices/2013/engine/500" xmlns:ddl500_500="http://schemas.microsoft.com/analysisservices/2013/engine/500/500" xmlns:dwd="http://schemas.microsoft.com/DataWarehouse/Designer/1.0" dwd:design-time-name="edd2cf38-40fe-4b34-9fe2-1a2ccb14339d" xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+  <ID>Videojuego DW</ID>
+  <Name>Videojuego DW</Name>
+  <CreatedTimestamp>0001-01-01T00:00:00Z</CreatedTimestamp>
+  <LastSchemaUpdate>0001-01-01T00:00:00Z</LastSchemaUpdate>
+  <Annotations>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:ShowFriendlyNames</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:CurrentLayout</Name>
+      <Value>_ALL_TABLES_</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:SchemaRestriction</Name>
+      <Value></Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:RetrieveRelationships</Name>
+      <Value>true</Value>
+    </Annotation>
+    <Annotation>
+      <Name>http://schemas.microsoft.com/DataWarehouse/Designer/1.0:Layouts</Name>
+      <Value>
+        <Layouts xmlns="">
+          <Diagram>
+            <Name>_ALL_TABLES_</Name>
+            <DiagramLayout />
+            <ShowRelationshipNames>False</ShowRelationshipNames>
+            <UseDiagramDefaultLayout>True</UseDiagramDefaultLayout>
+            <DiagramViewPortLeft>0</DiagramViewPortLeft>
+            <DiagramViewPortTop>0</DiagramViewPortTop>
+            <DiagramBoundingLeft>0</DiagramBoundingLeft>
+            <DiagramBoundingTop>0</DiagramBoundingTop>
+            <DiagramZoom>100</DiagramZoom>
+          </Diagram>
+        </Layouts>
+      </Value>
+    </Annotation>
+  </Annotations>
+  <DataSourceID>Videojuego DW</DataSourceID>
+  <Schema>
+    <xs:schema id="Videojuego_x0020_DW" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop">
+      <xs:element name="Videojuego_x0020_DW" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:design-time-name="e69dccfa-3489-4eb6-99aa-5d2bdbb0b39d">
+        <xs:complexType>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="dw_dim_evento" msprop:DbTableName="dim_evento" msprop:FriendlyName="dim_evento" msprop:TableType="Table" msprop:DbSchemaName="dw" msprop:design-time-name="da9b6e53-baf5-4670-a57f-8a081c5cb754">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="id_evento_sk" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="id_evento_sk" msprop:DbColumnName="id_evento_sk" msprop:design-time-name="76440d5e-f918-4633-9267-a8c934583f83" type="xs:int" />
+                  <xs:element name="tipo_evento" msprop:FriendlyName="tipo_evento" msprop:DbColumnName="tipo_evento" msprop:design-time-name="7c58f9d4-9eaf-4008-aabc-082ddcf10aa6">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="descripcion" msprop:FriendlyName="descripcion" msprop:DbColumnName="descripcion" msprop:design-time-name="c5ea10ec-4444-4898-90d0-c3896c7e9a95" type="xs:string" minOccurs="0" />
+                  <xs:element name="dificultad" msprop:FriendlyName="dificultad" msprop:DbColumnName="dificultad" msprop:design-time-name="e99f60bd-3b58-458d-80fa-0accf74a9b52" minOccurs="0">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="20" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="dw_dim_jugador" msprop:DbTableName="dim_jugador" msprop:FriendlyName="dim_jugador" msprop:TableType="Table" msprop:DbSchemaName="dw" msprop:design-time-name="3111513d-8fd7-4f68-b0ca-4b8249a71379">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="id_jugador_sk" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="id_jugador_sk" msprop:DbColumnName="id_jugador_sk" msprop:design-time-name="a83a9dbd-6091-40c8-862e-eba3a8787f55" type="xs:int" />
+                  <xs:element name="id_jugador_nk" msprop:FriendlyName="id_jugador_nk" msprop:DbColumnName="id_jugador_nk" msprop:design-time-name="cb2906dd-9858-4175-b5da-2b46bbcd71a9" type="xs:int" />
+                  <xs:element name="nombre_usuario" msprop:FriendlyName="nombre_usuario" msprop:DbColumnName="nombre_usuario" msprop:design-time-name="dc9d943e-ed32-415d-83d8-821c9b267ac8">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="255" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="correo" msprop:FriendlyName="correo" msprop:DbColumnName="correo" msprop:design-time-name="3ae4c5a9-6370-4573-af42-a62626dda199" minOccurs="0">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="255" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="fecha_registro" msprop:FriendlyName="fecha_registro" msprop:DbColumnName="fecha_registro" msprop:design-time-name="99ae87b6-c507-452b-bf08-aa0a05450c1d" type="xs:dateTime" minOccurs="0" />
+                  <xs:element name="pais" msprop:FriendlyName="pais" msprop:DbColumnName="pais" msprop:design-time-name="83e976d7-9f69-4167-ba67-8bbbd529c98d" minOccurs="0">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="dw_dim_personaje" msprop:DbTableName="dim_personaje" msprop:FriendlyName="dim_personaje" msprop:TableType="Table" msprop:DbSchemaName="dw" msprop:design-time-name="9a6839eb-f6d7-4108-ac00-3008a7f58564">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="id_personaje_sk" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="id_personaje_sk" msprop:DbColumnName="id_personaje_sk" msprop:design-time-name="c9e51d84-ac7e-46a4-9380-dbbe4890fa42" type="xs:int" />
+                  <xs:element name="id_personaje_nk" msprop:FriendlyName="id_personaje_nk" msprop:DbColumnName="id_personaje_nk" msprop:design-time-name="854585bc-1706-441b-ab63-0d43d7e53e5d" type="xs:int" />
+                  <xs:element name="clase" msprop:FriendlyName="clase" msprop:DbColumnName="clase" msprop:design-time-name="12f7f49f-6847-49ab-8ca8-0f952784ceba">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="nivel_inicial" msprop:FriendlyName="nivel_inicial" msprop:DbColumnName="nivel_inicial" msprop:design-time-name="51384f4d-98c5-43a7-be53-fc42cc14d84b" type="xs:int" minOccurs="0" />
+                  <xs:element name="raza" msprop:FriendlyName="raza" msprop:DbColumnName="raza" msprop:design-time-name="a470c3d2-ba84-4b6d-837c-cbdeb08fffcc" minOccurs="0">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:maxLength value="100" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="dw_dim_tiempo" msprop:DbTableName="dim_tiempo" msprop:FriendlyName="dim_tiempo" msprop:TableType="Table" msprop:DbSchemaName="dw" msprop:design-time-name="61643cab-2023-4543-9757-cd650f6363cb">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="id_tiempo_sk" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="id_tiempo_sk" msprop:DbColumnName="id_tiempo_sk" msprop:design-time-name="3f7ba94f-9bda-4979-ab67-b61c471ba436" type="xs:int" />
+                  <xs:element name="fecha" msprop:FriendlyName="fecha" msprop:DbColumnName="fecha" msprop:design-time-name="e30dbf7b-3bc7-416f-991a-b58c5563c0e1" type="xs:dateTime" />
+                  <xs:element name="dia" msprop:FriendlyName="dia" msprop:DbColumnName="dia" msprop:design-time-name="0487f947-1183-47a0-ac9c-5cfbbd2621a1" type="xs:int" />
+                  <xs:element name="mes" msprop:FriendlyName="mes" msprop:DbColumnName="mes" msprop:design-time-name="e914da7d-1bbc-4c05-bfb4-ddf12f665978" type="xs:int" />
+                  <xs:element name="anio" msprop:FriendlyName="anio" msprop:DbColumnName="anio" msprop:design-time-name="ba2daaf3-c1fd-4629-bc94-e2ad4368bfe9" type="xs:int" />
+                  <xs:element name="trimestre" msprop:FriendlyName="trimestre" msprop:DbColumnName="trimestre" msprop:design-time-name="b7af0631-e5fa-4d68-a3fa-4e32f5f4a721" type="xs:int" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="dw_fact_progreso" msprop:DbTableName="fact_progreso" msprop:FriendlyName="fact_progreso" msprop:TableType="Table" msprop:DbSchemaName="dw" msprop:design-time-name="25dd8054-fe2a-4980-b9a8-528ee4efac79">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="id_progreso" msdata:ReadOnly="true" msdata:AutoIncrement="true" msprop:FriendlyName="id_progreso" msprop:DbColumnName="id_progreso" msprop:design-time-name="e2f57939-f81c-44ff-b10e-3fc69dd9e50d" type="xs:int" />
+                  <xs:element name="id_jugador_sk" msprop:FriendlyName="id_jugador_sk" msprop:DbColumnName="id_jugador_sk" msprop:design-time-name="06508980-9c19-4fc5-b9a0-ab28e1673397" type="xs:int" />
+                  <xs:element name="id_personaje_sk" msprop:FriendlyName="id_personaje_sk" msprop:DbColumnName="id_personaje_sk" msprop:design-time-name="1e89021d-4cf6-4c04-a47c-57432889cfe0" type="xs:int" />
+                  <xs:element name="id_tiempo_sk" msprop:FriendlyName="id_tiempo_sk" msprop:DbColumnName="id_tiempo_sk" msprop:design-time-name="473b622e-ed6d-449f-a3cc-f037f746673e" type="xs:int" />
+                  <xs:element name="id_evento_sk" msprop:FriendlyName="id_evento_sk" msprop:DbColumnName="id_evento_sk" msprop:design-time-name="3180f03f-2723-49b1-a903-891947924acd" type="xs:int" />
+                  <xs:element name="xp_ganada" msprop:FriendlyName="xp_ganada" msprop:DbColumnName="xp_ganada" msprop:design-time-name="f4e6baf6-ea4a-4dce-b315-21bf41b4fa50" type="xs:int" />
+                  <xs:element name="oro_ganado" msprop:FriendlyName="oro_ganado" msprop:DbColumnName="oro_ganado" msprop:design-time-name="6300e156-ab72-40e9-84d7-af6b8ff5d57f" type="xs:int" />
+                  <xs:element name="nivel_resultante" msprop:FriendlyName="nivel_resultante" msprop:DbColumnName="nivel_resultante" msprop:design-time-name="94cf3443-0203-422d-ac05-681d66eebf37" type="xs:int" minOccurs="0" />
+                  <xs:element name="duracion_evento" msprop:FriendlyName="duracion_evento" msprop:DbColumnName="duracion_evento" msprop:design-time-name="5a0e55bb-788c-4d4d-aec7-ce27ae1d330b" type="xs:int" minOccurs="0" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:choice>
+        </xs:complexType>
+        <xs:unique name="Constraint1" msdata:PrimaryKey="true">
+          <xs:selector xpath=".//dw_dim_evento" />
+          <xs:field xpath="id_evento_sk" />
+        </xs:unique>
+        <xs:unique name="dw_dim_jugador_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+          <xs:selector xpath=".//dw_dim_jugador" />
+          <xs:field xpath="id_jugador_sk" />
+        </xs:unique>
+        <xs:unique name="dw_dim_personaje_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+          <xs:selector xpath=".//dw_dim_personaje" />
+          <xs:field xpath="id_personaje_sk" />
+        </xs:unique>
+        <xs:unique name="dw_dim_tiempo_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+          <xs:selector xpath=".//dw_dim_tiempo" />
+          <xs:field xpath="id_tiempo_sk" />
+        </xs:unique>
+        <xs:unique name="dw_fact_progreso_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+          <xs:selector xpath=".//dw_fact_progreso" />
+          <xs:field xpath="id_progreso" />
+        </xs:unique>
+        <xs:keyref name="FK__fact_prog__id_ev__5BE2A6F2" refer="Constraint1">
+          <xs:selector xpath=".//dw_fact_progreso" />
+          <xs:field xpath="id_evento_sk" />
+        </xs:keyref>
+        <xs:keyref name="FK__fact_prog__id_ju__59063A47" refer="dw_dim_jugador_Constraint1">
+          <xs:selector xpath=".//dw_fact_progreso" />
+          <xs:field xpath="id_jugador_sk" />
+        </xs:keyref>
+        <xs:keyref name="FK__fact_prog__id_pe__59FA5E80" refer="dw_dim_personaje_Constraint1">
+          <xs:selector xpath=".//dw_fact_progreso" />
+          <xs:field xpath="id_personaje_sk" />
+        </xs:keyref>
+        <xs:keyref name="FK__fact_prog__id_ti__5AEE82B9" refer="dw_dim_tiempo_Constraint1">
+          <xs:selector xpath=".//dw_fact_progreso" />
+          <xs:field xpath="id_tiempo_sk" />
+        </xs:keyref>
+      </xs:element>
+    </xs:schema>
+    <Videojuego_x0020_DW xmlns="" />
+  </Schema>
+</DataSourceView>
