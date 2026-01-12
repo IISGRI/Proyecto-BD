@@ -1590,6 +1590,10 @@ Este proyecto implementa **dos soluciones completas de Business Intelligence (En
 2. **Enfoque Microsoft (SQL Server + SSAS)**: Solución empresarial utilizando el ecosistema Microsoft, optimizada para análisis corporativos y visualización en Excel.
 
 Ambas implementaciones permiten a los analistas cruzar variables complejas (Tiempo, Geografía, Clase de Personaje) con métricas de rendimiento (XP, Oro) en milisegundos, visualizando los hallazgos en dashboards interactivos.
+---
+
+## 🎥 Video del procedimiento de los 2 metodos.
+📺 [https://youtu.be/XXXXXXXX](https://youtu.be/tYC2RmAvDZE?si=j1Gx8EhSi2jjlEH7)
 
 ---
 
